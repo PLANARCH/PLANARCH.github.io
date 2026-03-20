@@ -1,168 +1,210 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>자료 아카이브</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자료 아카이브</title>
 
-    <style>
-        :root {
-            --primary-color: #3b82f6;
-            --accent-color: #8b5cf6;
-            --bg-dark: #0f172a;
-            --card-bg: #1e293b;
-            --text-light: #f8fafc;
-            --text-dim: #94a3b8;
-        }
+<style>
+:root {
+  --primary: #3b82f6;
+  --accent: #8b5cf6;
+}
 
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            margin: 0;
-        }
+/* 🌙 DARK (기본) */
+body.dark {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #f8fafc;
+  --dim: #94a3b8;
+}
 
-        header {
-            text-align: center;
-            padding: 2rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
+/* ☀️ LIGHT */
+body.light {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #0f172a;
+  --dim: #64748b;
+}
 
-        h1 {
-            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+body {
+  margin: 0;
+  font-family: system-ui;
+  background: var(--bg);
+  color: var(--text);
+  transition: 0.3s;
+}
 
-        main {
-            max-width: 1200px;
-            margin: auto;
-            padding: 2rem;
-        }
+header {
+  text-align: center;
+  padding: 2rem;
+  border-bottom: 1px solid var(--dim);
+  position: relative;
+}
 
-        .grid-container {
-            display: grid;
-            gap: 2rem;
-        }
+h1 {
+  background: linear-gradient(to right, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
-        .category {
-            margin-bottom: 2rem;
-        }
+.theme-toggle {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
 
-        .category h2 {
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-        }
+main {
+  max-width: 1200px;
+  margin: auto;
+  padding: 2rem;
+}
 
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-        }
+.category {
+  margin-bottom: 2rem;
+}
 
-        .card {
-            background: var(--card-bg);
-            padding: 1rem;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+.category h2 {
+  color: var(--primary);
+}
 
-        .card:hover {
-            transform: translateY(-5px);
-            border: 1px solid var(--primary-color);
-        }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+  gap: 1rem;
+}
 
-        /* markdown viewer */
-        #viewer {
-            display: none;
-        }
+.card {
+  background: var(--card);
+  padding: 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
 
-        .markdown-body {
-            max-width: 800px;
-            margin: auto;
-            line-height: 1.7;
-        }
+.card:hover {
+  transform: translateY(-5px);
+  border: 1px solid var(--primary);
+}
 
-        .markdown-body h1,
-        .markdown-body h2 {
-            border-bottom: 1px solid #334155;
-            padding-bottom: 0.3em;
-        }
+.card p {
+  font-size: 0.8rem;
+  color: var(--dim);
+}
 
-        .markdown-body code {
-            background: #1e293b;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
+/* viewer */
+#viewer {
+  display: none;
+}
 
-        button {
-            margin-bottom: 1rem;
-            padding: 0.5rem 1rem;
-            background: var(--primary-color);
-            border: none;
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-    </style>
+.markdown-body {
+  max-width: 800px;
+  margin: auto;
+  line-height: 1.7;
+}
+
+.markdown-body h1, .markdown-body h2 {
+  border-bottom: 1px solid var(--dim);
+}
+
+.markdown-body code {
+  background: var(--card);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+button {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+</style>
 </head>
 
-<body>
+<body class="dark">
 
 <header>
-    <h1>📚 자료 아카이브</h1>
+  <h1>📚 자료 아카이브</h1>
+  <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
 </header>
 
 <main>
-    <!-- 📦 메인 목록 -->
-    <div id="content-grid" class="grid-container"></div>
-
-    <!-- 📄 Markdown Viewer -->
-    <div id="viewer"></div>
+  <div id="content-grid"></div>
+  <div id="viewer"></div>
 </main>
 
-<!-- markdown parser -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
+// 🌗 테마
+function toggleTheme() {
+  const body = document.body;
+  if (body.classList.contains('dark')) {
+    body.classList.replace('dark','light');
+    localStorage.setItem('theme','light');
+  } else {
+    body.classList.replace('light','dark');
+    localStorage.setItem('theme','dark');
+  }
+}
+
+// 저장된 테마 적용
+const saved = localStorage.getItem('theme');
+if (saved) document.body.className = saved;
+
+// 카테고리 이름 매핑
+const categoryMap = {
+  frontend: "🎨 Frontend",
+  backend: "⚙️ Backend"
+};
+
 const grid = document.getElementById('content-grid');
 const viewer = document.getElementById('viewer');
 
-// data.json 불러오기
+// 데이터 로드
 fetch('data.json')
-  .then(res => res.json())
-  .then(data => {
-    const grouped = {};
+.then(res=>res.json())
+.then(data=>{
+  const grouped = {};
 
-    data.forEach(item => {
-      if (!grouped[item.category]) {
-        grouped[item.category] = [];
-      }
-      grouped[item.category].push(item);
-    });
-
-    render(grouped);
+  data.forEach(item=>{
+    if(!grouped[item.category]) grouped[item.category]=[];
+    grouped[item.category].push(item);
   });
 
-// 카테고리 렌더링
-function render(grouped) {
-  Object.keys(grouped).forEach(category => {
-    const section = document.createElement('div');
-    section.className = 'category';
+  render(grouped);
+});
 
-    const title = document.createElement('h2');
-    title.textContent = category;
+// 렌더링
+function render(grouped){
+  grid.innerHTML='';
 
-    const cards = document.createElement('div');
-    cards.className = 'cards';
+  Object.keys(grouped).forEach(category=>{
+    const section=document.createElement('div');
+    section.className='category';
 
-    grouped[category].forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.textContent = item.title;
+    const title=document.createElement('h2');
+    title.textContent = categoryMap[category] || category;
 
-      card.onclick = () => openMarkdown(item.path);
+    const cards=document.createElement('div');
+    cards.className='cards';
+
+    grouped[category].forEach(item=>{
+      const card=document.createElement('div');
+      card.className='card';
+
+      card.innerHTML=`
+        <h3>${item.title}</h3>
+        <p>${category}</p>
+      `;
+
+      card.onclick=()=>openMarkdown(item.path);
 
       cards.appendChild(card);
     });
@@ -174,26 +216,26 @@ function render(grouped) {
 }
 
 // markdown 열기
-function openMarkdown(path) {
+function openMarkdown(path){
   fetch(path)
-    .then(res => res.text())
-    .then(md => {
-      grid.style.display = 'none';
-      viewer.style.display = 'block';
+  .then(res=>res.text())
+  .then(md=>{
+    grid.style.display='none';
+    viewer.style.display='block';
 
-      viewer.innerHTML = `
-        <button onclick="goBack()">← 뒤로</button>
-        <div class="markdown-body">
-          ${marked.parse(md)}
-        </div>
-      `;
-    });
+    viewer.innerHTML=`
+      <button onclick="goBack()">← 뒤로</button>
+      <div class="markdown-body">
+        ${marked.parse(md)}
+      </div>
+    `;
+  });
 }
 
 // 뒤로가기
-function goBack() {
-  viewer.style.display = 'none';
-  grid.style.display = 'block';
+function goBack(){
+  viewer.style.display='none';
+  grid.style.display='block';
 }
 </script>
 
