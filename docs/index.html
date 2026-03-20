@@ -3,12 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
 <title>자료 아카이브</title>
 
 <style>
 :root {
   --primary: #3b82f6;
   --accent: #8b5cf6;
+}
+
+.markdown-body {
+  background: var(--bg);
+  color: var(--text);
+  padding: 2rem;
+  border-radius: 10px;
 }
 
 /* 🌙 DARK (기본) */
@@ -124,6 +132,62 @@ button {
   border-radius: 6px;
   cursor: pointer;
 }
+
+.layout {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+}
+
+#sidebar {
+  padding: 1rem;
+  border-right: 1px solid var(--dim);
+}
+
+#sidebar h3 {
+  margin-top: 1rem;
+}
+
+#sidebar div {
+  cursor: pointer;
+  padding: 4px 0;
+  color: var(--dim);
+}
+
+#sidebar div:hover {
+  color: var(--primary);
+}
+
+.content {
+  padding: 1rem;
+}
+
+#search {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--card);
+  color: var(--text);
+}
+
+/* 🔥 타일 스타일 */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
+  gap: 1rem;
+}
+
+.card {
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--card);
+  border-radius: 12px;
+  text-align: center;
+  font-weight: bold;
+}
 </style>
 </head>
 
@@ -134,96 +198,117 @@ button {
   <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
 </header>
 
-<main>
-  <div id="content-grid"></div>
-  <div id="viewer"></div>
+<main class="layout">
+  <aside id="sidebar"></aside>
+
+  <section class="content">
+    <input id="search" placeholder="검색..." />
+    <div id="content-grid"></div>
+    <div id="viewer"></div>
+  </section>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-<script>
-// 🌗 테마
-function toggleTheme() {
-  const body = document.body;
-  if (body.classList.contains('dark')) {
-    body.classList.replace('dark','light');
-    localStorage.setItem('theme','light');
-  } else {
-    body.classList.replace('light','dark');
-    localStorage.setItem('theme','dark');
-  }
-}
-
-// 저장된 테마 적용
-const saved = localStorage.getItem('theme');
-if (saved) document.body.className = saved;
-
-// 카테고리 이름 매핑
-const categoryMap = {
-  frontend: "🎨 Frontend",
-  backend: "⚙️ Backend"
-};
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 const grid = document.getElementById('content-grid');
 const viewer = document.getElementById('viewer');
+const sidebar = document.getElementById('sidebar');
+const searchInput = document.getElementById('search');
+
+let allData = [];
+
+// URL
+const params = new URLSearchParams(location.search);
+const fileParam = params.get('file');
 
 // 데이터 로드
 fetch('data.json')
-.then(res=>res.json())
-.then(data=>{
-  const grouped = {};
+.then(res => res.json())
+.then(data => {
+  allData = data;
 
-  data.forEach(item=>{
-    if(!grouped[item.category]) grouped[item.category]=[];
-    grouped[item.category].push(item);
-  });
+  renderSidebar(data);
+  render(data);
 
-  render(grouped);
+  if (fileParam) openMarkdown(fileParam);
 });
 
-// 렌더링
-function render(grouped){
-  grid.innerHTML='';
+// 🔍 검색
+searchInput.addEventListener('input', e => {
+  const keyword = e.target.value.toLowerCase();
 
-  Object.keys(grouped).forEach(category=>{
-    const section=document.createElement('div');
-    section.className='category';
+  const filtered = allData.filter(item =>
+    item.title.toLowerCase().includes(keyword)
+  );
 
-    const title=document.createElement('h2');
-    title.textContent = categoryMap[category] || category;
+  render(filtered);
+});
 
-    const cards=document.createElement('div');
-    cards.className='cards';
+// 📚 사이드바
+function renderSidebar(data) {
+  const grouped = group(data);
 
-    grouped[category].forEach(item=>{
-      const card=document.createElement('div');
-      card.className='card';
+  Object.keys(grouped).forEach(category => {
+    const title = document.createElement('h3');
+    title.textContent = category;
 
-      card.innerHTML=`
-        <h3>${item.title}</h3>
-        <p>${category}</p>
-      `;
+    sidebar.appendChild(title);
 
-      card.onclick=()=>openMarkdown(item.path);
+    grouped[category].forEach(item => {
+      const el = document.createElement('div');
+      el.textContent = item.title;
+      el.onclick = () => openMarkdown(item.path);
+
+      sidebar.appendChild(el);
+    });
+  });
+}
+
+// 📦 메인 렌더
+function render(data) {
+  grid.innerHTML = '';
+  viewer.style.display = 'none';
+  grid.style.display = 'grid';
+
+  const grouped = group(data);
+
+  Object.keys(grouped).forEach(category => {
+    const section = document.createElement('div');
+
+    section.innerHTML = `<h2>${category}</h2>`;
+
+    const cards = document.createElement('div');
+    cards.className = 'cards';
+
+    grouped[category].forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.textContent = item.title;
+
+      card.onclick = () => {
+        history.pushState(null,"",`?file=${item.path}`);
+        openMarkdown(item.path);
+      };
 
       cards.appendChild(card);
     });
 
-    section.appendChild(title);
     section.appendChild(cards);
     grid.appendChild(section);
   });
 }
 
-// markdown 열기
-function openMarkdown(path){
+// 📄 markdown
+function openMarkdown(path) {
   fetch(path)
-  .then(res=>res.text())
-  .then(md=>{
-    grid.style.display='none';
-    viewer.style.display='block';
+  .then(res => res.text())
+  .then(md => {
+    grid.style.display = 'none';
+    viewer.style.display = 'block';
 
-    viewer.innerHTML=`
+    viewer.innerHTML = `
       <button onclick="goBack()">← 뒤로</button>
       <div class="markdown-body">
         ${marked.parse(md)}
@@ -232,12 +317,21 @@ function openMarkdown(path){
   });
 }
 
-// 뒤로가기
-function goBack(){
-  viewer.style.display='none';
-  grid.style.display='block';
+function goBack() {
+  viewer.style.display = 'none';
+  grid.style.display = 'grid';
+  history.pushState(null,"","/");
 }
-</script>
+
+// 그룹 함수
+function group(data) {
+  const g = {};
+  data.forEach(i=>{
+    if(!g[i.category]) g[i.category]=[];
+    g[i.category].push(i);
+  });
+  return g;
+}
 
 </body>
 </html>
