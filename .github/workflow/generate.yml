@@ -1,0 +1,33 @@
+name: Auto Generate Data
+
+on:
+  push:
+    paths:
+      - 'docs/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: 코드 가져오기
+        uses: actions/checkout@v3
+
+      - name: Node 설치
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: JSON 생성
+        run: node docs/generate.js
+
+      - name: 변경사항 커밋
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add docs/data.json
+          git commit -m "🤖 auto: update data.json" || echo "No changes"
+          git push

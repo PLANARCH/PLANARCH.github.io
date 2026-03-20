@@ -1,0 +1,16 @@
+.markdown-body {
+  max-width: 800px;
+  margin: auto;
+  line-height: 1.7;
+}
+
+.markdown-body h1, .markdown-body h2 {
+  border-bottom: 1px solid #334155;
+  padding-bottom: 0.3em;
+}
+
+.markdown-body code {
+  background: #1e293b;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
