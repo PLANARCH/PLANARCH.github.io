@@ -3,190 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
+
 <title>자료 아카이브</title>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github-dark.min.css">
+<script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common.min.js"></script>
+
 <style>
-:root {
-  --primary: #3b82f6;
-  --accent: #8b5cf6;
-}
+:root { --primary:#3b82f6; }
 
-.markdown-body {
-  background: var(--bg);
-  color: var(--text);
-  padding: 2rem;
-  border-radius: 10px;
-}
+body.dark { --bg:#0f172a; --card:#1e293b; --text:#f8fafc; }
+body.light { --bg:#f8fafc; --card:#fff; --text:#0f172a; }
 
-/* 🌙 DARK (기본) */
-body.dark {
-  --bg: #0f172a;
-  --card: #1e293b;
-  --text: #f8fafc;
-  --dim: #94a3b8;
-}
-
-/* ☀️ LIGHT */
-body.light {
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --text: #0f172a;
-  --dim: #64748b;
-}
-
-body {
-  margin: 0;
-  font-family: system-ui;
-  background: var(--bg);
-  color: var(--text);
-  transition: 0.3s;
-}
+body { margin:0; font-family:system-ui; background:var(--bg); color:var(--text); }
 
 header {
-  text-align: center;
-  padding: 2rem;
-  border-bottom: 1px solid var(--dim);
-  position: relative;
+  display:flex; justify-content:space-between;
+  padding:10px 20px; border-bottom:1px solid #555;
 }
 
-h1 {
-  background: linear-gradient(to right, var(--primary), var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+.layout { display:grid; grid-template-columns:auto 1fr; }
 
-.theme-toggle {
-  position: absolute;
-  right: 20px;
-  top: 20px;
-  cursor: pointer;
-  font-size: 1.2rem;
-}
-
-main {
-  max-width: 1200px;
-  margin: auto;
-  padding: 2rem;
-}
-
-.category {
-  margin-bottom: 2rem;
-}
-
-.category h2 {
-  color: var(--primary);
-}
+.content { padding:1rem; }
 
 .cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
-  gap: 1rem;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:0.8rem;
 }
 
 .card {
-  background: var(--card);
-  padding: 1rem;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: 0.2s;
+  height:100px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:var(--card);
+  border-radius:10px;
+  cursor:pointer;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  border: 1px solid var(--primary);
+#viewer { display:none; }
+
+.markdown-body { max-width:800px; margin:auto; }
+
+/* editor */
+#editor {
+  display:none;
+  padding:1rem;
+  background:var(--card);
+  border-radius:10px;
+  margin-bottom:1rem;
 }
 
-.card p {
-  font-size: 0.8rem;
-  color: var(--dim);
-}
+textarea { width:100%; height:200px; }
 
-/* viewer */
-#viewer {
-  display: none;
-}
-
-.markdown-body {
-  max-width: 800px;
-  margin: auto;
-  line-height: 1.7;
-}
-
-.markdown-body h1, .markdown-body h2 {
-  border-bottom: 1px solid var(--dim);
-}
-
-.markdown-body code {
-  background: var(--card);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-button {
-  margin-bottom: 1rem;
-  padding: 0.5rem 1rem;
-  background: var(--primary);
-  border: none;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: 250px 1fr;
-}
-
-#sidebar {
-  padding: 1rem;
-  border-right: 1px solid var(--dim);
-}
-
-#sidebar h3 {
-  margin-top: 1rem;
-}
-
-#sidebar div {
-  cursor: pointer;
-  padding: 4px 0;
-  color: var(--dim);
-}
-
-#sidebar div:hover {
-  color: var(--primary);
-}
-
-.content {
-  padding: 1rem;
-}
-
-#search {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 1rem;
-  border-radius: 8px;
-  border: none;
-  background: var(--card);
-  color: var(--text);
-}
-
-/* 🔥 타일 스타일 */
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
-  gap: 1rem;
-}
-
-.card {
-  height: 120px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--card);
-  border-radius: 12px;
-  text-align: center;
-  font-weight: bold;
+/* preview */
+#preview img {
+  max-width:150px;
+  margin:5px;
 }
 </style>
 </head>
@@ -195,141 +70,206 @@ button {
 
 <header>
   <h1>📚 자료 아카이브</h1>
-  <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+  <div>
+    <button onclick="login()">🔐 로그인</button>
+    <button onclick="toggleEditor()">✏️ 글쓰기</button>
+  </div>
 </header>
 
 <main class="layout">
-  <aside id="sidebar"></aside>
-
   <section class="content">
-    <input id="search" placeholder="검색..." />
+
+    <!-- EDITOR -->
+    <div id="editor">
+      <input id="title" placeholder="파일명 (react.md)" /><br><br>
+      <input id="category" placeholder="카테고리 (frontend)" /><br><br>
+
+      <div id="dropzone" style="border:2px dashed #888; padding:20px;">
+        📂 이미지 드롭
+      </div>
+
+      <div id="preview"></div>
+
+      <textarea id="content"></textarea><br>
+      <button onclick="savePost()">💾 저장</button>
+    </div>
+
     <div id="content-grid"></div>
     <div id="viewer"></div>
   </section>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
 <script>
-const grid = document.getElementById('content-grid');
-const viewer = document.getElementById('viewer');
-const sidebar = document.getElementById('sidebar');
-const searchInput = document.getElementById('search');
+marked.setOptions({ breaks:true });
 
-let allData = [];
+const owner="PLANARCH";
+const repo="PLANARCH.github.io";
 
-// URL
-const params = new URLSearchParams(location.search);
-const fileParam = params.get('file');
+const grid=document.getElementById('content-grid');
+const viewer=document.getElementById('viewer');
 
-// 데이터 로드
+let currentEditPath=null;
+
+// 로그인
+function login(){
+  const t=prompt("Token 입력");
+  localStorage.setItem("github_token",t);
+}
+
+// 에디터
+function toggleEditor(){
+  const ed=document.getElementById("editor");
+  ed.style.display = ed.style.display==="none"?"block":"none";
+}
+
+// LOAD
 fetch('data.json')
-.then(res => res.json())
-.then(data => {
-  allData = data;
+.then(r=>r.json())
+.then(data=>render(data));
 
-  renderSidebar(data);
-  render(data);
-
-  if (fileParam) openMarkdown(fileParam);
-});
-
-// 🔍 검색
-searchInput.addEventListener('input', e => {
-  const keyword = e.target.value.toLowerCase();
-
-  const filtered = allData.filter(item =>
-    item.title.toLowerCase().includes(keyword)
-  );
-
-  render(filtered);
-});
-
-// 📚 사이드바
-function renderSidebar(data) {
-  const grouped = group(data);
-
-  Object.keys(grouped).forEach(category => {
-    const title = document.createElement('h3');
-    title.textContent = category;
-
-    sidebar.appendChild(title);
-
-    grouped[category].forEach(item => {
-      const el = document.createElement('div');
-      el.textContent = item.title;
-      el.onclick = () => openMarkdown(item.path);
-
-      sidebar.appendChild(el);
-    });
-  });
-}
-
-// 📦 메인 렌더
-function render(data) {
-  grid.innerHTML = '';
-  viewer.style.display = 'none';
-  grid.style.display = 'grid';
-
-  const grouped = group(data);
-
-  Object.keys(grouped).forEach(category => {
-    const section = document.createElement('div');
-
-    section.innerHTML = `<h2>${category}</h2>`;
-
-    const cards = document.createElement('div');
-    cards.className = 'cards';
-
-    grouped[category].forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.textContent = item.title;
-
-      card.onclick = () => {
-        history.pushState(null,"",`?file=${item.path}`);
-        openMarkdown(item.path);
-      };
-
-      cards.appendChild(card);
-    });
-
-    section.appendChild(cards);
-    grid.appendChild(section);
-  });
-}
-
-// 📄 markdown
-function openMarkdown(path) {
-  fetch(path)
-  .then(res => res.text())
-  .then(md => {
-    grid.style.display = 'none';
-    viewer.style.display = 'block';
-
-    viewer.innerHTML = `
-      <button onclick="goBack()">← 뒤로</button>
-      <div class="markdown-body">
-        ${marked.parse(md)}
-      </div>
-    `;
-  });
-}
-
-function goBack() {
-  viewer.style.display = 'none';
-  grid.style.display = 'grid';
-  history.pushState(null,"","/");
-}
-
-// 그룹 함수
-function group(data) {
-  const g = {};
+// 카드
+function render(data){
+  grid.innerHTML='';
   data.forEach(i=>{
-    if(!g[i.category]) g[i.category]=[];
-    g[i.category].push(i);
+    const card=document.createElement('div');
+    card.className='card';
+    card.textContent=i.title;
+
+    card.onclick=()=>openMarkdown(i.path);
+    card.ondblclick=()=>editPost(i);
+
+    grid.appendChild(card);
   });
-  return g;
 }
+
+// MARKDOWN 보기
+function openMarkdown(path){
+  fetch(path)
+  .then(r=>r.text())
+  .then(md=>{
+    viewer.innerHTML=`
+      <button onclick="editFromViewer('${path}')">✏️ 수정</button>
+      <div class="markdown-body">${marked.parse(md)}</div>
+    `;
+
+    grid.style.display='none';
+    viewer.style.display='block';
+
+    document.querySelectorAll('pre code').forEach(b=>hljs.highlightElement(b));
+  });
+}
+
+// viewer에서 수정
+function editFromViewer(path){
+  fetch(path)
+  .then(r=>r.text())
+  .then(md=>{
+    toggleEditor();
+
+    document.getElementById("content").value=md;
+    currentEditPath=path;
+  });
+}
+
+// 카드에서 수정
+function editPost(item){
+  fetch(item.path)
+  .then(r=>r.text())
+  .then(md=>{
+    toggleEditor();
+    document.getElementById("title").value=item.title+".md";
+    document.getElementById("category").value=item.category;
+    document.getElementById("content").value=md;
+
+    currentEditPath=item.path;
+  });
+}
+
+// 저장
+async function savePost(){
+  const token=localStorage.getItem("github_token");
+  if(!token) return alert("로그인");
+
+  const title=document.getElementById("title").value;
+  const category=document.getElementById("category").value;
+  const content=document.getElementById("content").value;
+
+  const path=currentEditPath || `docs/${category}/${title}`;
+
+  let sha=null;
+
+  // 수정이면 sha 필요
+  if(currentEditPath){
+    const res=await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`);
+    const data=await res.json();
+    sha=data.sha;
+  }
+
+  await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,{
+    method:"PUT",
+    headers:{
+      "Authorization":`token ${token}`,
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      message:"update",
+      content:btoa(unescape(encodeURIComponent(content))),
+      sha: sha
+    })
+  });
+
+  alert("완료");
+  location.reload();
+}
+
+// 이미지 드롭
+const dropzone=document.getElementById("dropzone");
+
+dropzone.addEventListener("dragover",e=>e.preventDefault());
+
+dropzone.addEventListener("drop",e=>{
+  e.preventDefault();
+
+  const file=e.dataTransfer.files[0];
+  const reader=new FileReader();
+
+  reader.onload=async function(){
+    const base64=reader.result.split(',')[1];
+
+    const token=localStorage.getItem("github_token");
+    const category=document.getElementById("category").value;
+
+    const path=`docs/${category}/img/${file.name}`;
+
+    await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,{
+      method:"PUT",
+      headers:{
+        "Authorization":`token ${token}`,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        message:"img upload",
+        content:base64
+      })
+    });
+
+    const url=`https://raw.githubusercontent.com/${owner}/${repo}/main/${path}`;
+
+    // preview
+    const preview=document.getElementById("preview");
+    const img=document.createElement("img");
+    img.src=url;
+    preview.appendChild(img);
+
+    // md 삽입
+    const textarea=document.getElementById("content");
+    textarea.value += `\n\n![${file.name}](${url})\n`;
+  };
+
+  reader.readAsDataURL(file);
+});
 </script>
 
 </body>
