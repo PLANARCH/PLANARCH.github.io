@@ -10,6 +10,15 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github-dark.min.css">
 <script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common.min.js"></script>
 
+<!-- 🔥 Google Analytics
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> -->
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-XXXXXXXXXX');
+</script>
+
 <style>
 :root { --primary:#3b82f6; }
 
@@ -37,6 +46,7 @@ header {
   border-radius:8px; border:none;
   background:var(--card); color:var(--text);
 }
+body.light #search { box-shadow:0 2px 6px rgba(0,0,0,0.1); }
 
 .cards {
   display:grid;
@@ -54,15 +64,33 @@ header {
   cursor:pointer;
 }
 
-#editor {
-  display:none;
-  padding:1rem;
-  background:var(--card);
-  border-radius:10px;
-  margin-bottom:1rem;
+/* 🔥 태그 */
+.tags { margin-top:5px; }
+.tag {
+  display:inline-block;
+  font-size:0.7rem;
+  padding:2px 6px;
+  margin:2px;
+  background:var(--primary);
+  color:white;
+  border-radius:6px;
+  cursor:pointer;
 }
 
-textarea { width:100%; height:200px; }
+/* 🔥 복사 버튼 */
+.copy-btn {
+  margin-bottom:10px;
+  padding:5px 10px;
+  background:var(--primary);
+  color:white;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.markdown-body { max-width:800px; margin:auto; }
+
+.toc-item { cursor:pointer; font-size:0.8rem; color:var(--dim);}
 </style>
 </head>
 
@@ -70,34 +98,14 @@ textarea { width:100%; height:200px; }
 
 <header>
   <h1>📚 자료 아카이브</h1>
-  <div>
-    <button onclick="openEditor()">✏️</button>
-    <button onclick="toggleTheme()">🌙</button>
-  </div>
+  <div onclick="toggleTheme()">🌙</div>
 </header>
 
 <main class="layout">
   <aside id="sidebar"></aside>
 
   <section class="content">
-
     <input id="search" placeholder="검색..." />
-
-    <!-- ✏️ EDITOR -->
-    <div id="editor">
-      <input id="edit-title" placeholder="파일명 (react.md)" />
-      <input id="edit-category" placeholder="카테고리 (frontend)" />
-
-      <div id="dropzone" style="border:1px dashed var(--dim); padding:10px; margin:10px 0;">
-        이미지 드롭
-      </div>
-
-      <textarea id="edit-content"></textarea>
-
-      <button onclick="savePost()">💾 저장</button>
-      <button onclick="deletePost()">🗑️ 삭제</button>
-    </div>
-
     <div id="content-grid"></div>
     <div id="viewer"></div>
   </section>
@@ -110,9 +118,6 @@ textarea { width:100%; height:200px; }
 <script>
 marked.setOptions({ breaks:true });
 
-const owner="PLANARCH";
-const repo="PLANARCH.github.io";
-
 const grid = document.getElementById('content-grid');
 const viewer = document.getElementById('viewer');
 const sidebar = document.getElementById('sidebar');
@@ -120,17 +125,10 @@ const toc = document.getElementById('toc');
 const searchInput = document.getElementById('search');
 
 let allData = [];
-let currentEditPath = null;
 
-// 🔐 토큰
-function getToken() {
-  let token = localStorage.getItem("github_token");
-  if (!token) {
-    token = prompt("GitHub Token 입력");
-    localStorage.setItem("github_token", token);
-  }
-  return token;
-}
+// 🔥 태그 예시
+// data.json에 추가하면 됨
+// { title:"react", category:"frontend", path:"...", tags:["react","ui"] }
 
 // LOAD
 fetch('data.json')
@@ -139,6 +137,12 @@ fetch('data.json')
   allData = data;
   renderSidebar(data);
   render(data);
+});
+
+// 🔍 검색 + 태그
+searchInput.addEventListener('input', e=>{
+  const k = e.target.value.toLowerCase();
+  render(allData.filter(i=>i.title.toLowerCase().includes(k)));
 });
 
 // SIDEBAR
@@ -177,10 +181,17 @@ function render(data){
     g[cat].forEach(i=>{
       const card=document.createElement('div');
       card.className='card';
-      card.textContent=i.title;
+
+      card.innerHTML = `
+        <div>
+          ${i.title}
+          <div class="tags">
+            ${(i.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
+          </div>
+        </div>
+      `;
 
       card.onclick=()=>openMarkdown(i.path);
-      card.ondblclick=()=>openEditor(i);
 
       cards.appendChild(card);
     });
@@ -190,144 +201,53 @@ function render(data){
   });
 }
 
+// 🔗 복사
+function copyLink() {
+  navigator.clipboard.writeText(location.href);
+  alert("링크 복사됨!");
+}
+
+// TOC
+function generateTOC(){
+  toc.innerHTML="<h3>목차</h3>";
+  document.querySelectorAll('.markdown-body h1,h2,h3').forEach(el=>{
+    const id = el.innerText.replace(/\s+/g,'-');
+    el.id=id;
+
+    const item=document.createElement('div');
+    item.className='toc-item';
+    item.textContent=el.innerText;
+    item.onclick=()=>document.getElementById(id).scrollIntoView();
+
+    toc.appendChild(item);
+  });
+}
+
 // MARKDOWN
 function openMarkdown(path){
   fetch(path)
   .then(r=>r.text())
   .then(md=>{
-    viewer.innerHTML = `<div class="markdown-body">${marked.parse(md)}</div>`;
+    const html = marked.parse(md);
+
+    viewer.innerHTML = `
+      <button onclick="copyLink()" class="copy-btn">🔗 링크 복사</button>
+      <div class="markdown-body">${html}</div>
+    `;
+
     grid.style.display='none';
     viewer.style.display='block';
-  });
-}
 
-// EDITOR
-function openEditor(item=null){
-  document.getElementById("editor").style.display="block";
+    generateTOC();
 
-  if(item){
-    fetch(item.path)
-    .then(r=>r.text())
-    .then(md=>{
-      document.getElementById("edit-title").value=item.title+".md";
-      document.getElementById("edit-category").value=item.category;
-      document.getElementById("edit-content").value=md;
-      currentEditPath=item.path;
+    document.querySelectorAll('pre code').forEach(block=>{
+      hljs.highlightElement(block);
     });
-  } else {
-    currentEditPath=null;
-  }
-}
 
-// SAVE
-async function savePost(){
-  const token=getToken();
-
-  const title=document.getElementById("edit-title").value;
-  const category=document.getElementById("edit-category").value;
-  const content=document.getElementById("edit-content").value;
-
-  const path=currentEditPath || `docs/${category}/${title}`;
-
-  let sha=null;
-
-  if(currentEditPath){
-    const res=await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`);
-    const data=await res.json();
-    sha=data.sha;
-  }
-
-  await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`,{
-    method:"PUT",
-    headers:{
-      "Authorization":`token ${token}`,
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
-      message:"update",
-      content:btoa(unescape(encodeURIComponent(content))),
-      ...(sha && { sha })
-    })
-  });
-
-  await updateDataJson(token);
-  location.reload();
-}
-
-// DELETE
-async function deletePost(){
-  if(!currentEditPath) return alert("삭제할 파일 없음");
-
-  const token=getToken();
-
-  const res=await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${currentEditPath}`);
-  const data=await res.json();
-
-  await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${currentEditPath}`,{
-    method:"DELETE",
-    headers:{
-      "Authorization":`token ${token}`,
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
-      message:"delete",
-      sha:data.sha
-    })
-  });
-
-  await updateDataJson(token);
-  location.reload();
-}
-
-// 🔥 data.json 자동 생성
-async function updateDataJson(token){
-  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/docs`);
-  const folders = await res.json();
-
-  let result=[];
-
-  for(const folder of folders){
-    if(folder.type==="dir"){
-      const filesRes = await fetch(folder.url);
-      const files = await filesRes.json();
-
-      files.forEach(f=>{
-        if(f.name.endsWith(".md")){
-          result.push({
-            title: f.name.replace(".md",""),
-            category: folder.name,
-            path: `docs/${folder.name}/${f.name}`
-          });
-        }
-      });
-    }
-  }
-
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(result,null,2))));
-
-  // 기존 sha
-  let sha=null;
-  try{
-    const old = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/docs/data.json`);
-    const j = await old.json();
-    sha=j.sha;
-  }catch{}
-
-  await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/docs/data.json`,{
-    method:"PUT",
-    headers:{
-      "Authorization":`token ${token}`,
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
-      message:"update data.json",
-      content,
-      ...(sha && { sha })
-    })
+    history.pushState(null,"",`?file=${path}`);
   });
 }
 
-// GROUP
 function group(data){
   const g={};
   data.forEach(i=>{
@@ -337,7 +257,6 @@ function group(data){
   return g;
 }
 
-// THEME
 function toggleTheme(){
   document.body.classList.toggle('dark');
   document.body.classList.toggle('light');
