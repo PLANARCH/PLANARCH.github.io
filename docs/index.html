@@ -12,66 +12,60 @@
         :root { 
             --primary: #3b82f6; 
             --sidebar-width: 280px;
+            --toc-width: 260px;
         }
 
         body.dark { --bg:#0f172a; --card:#1e293b; --text:#f8fafc; --dim:#94a3b8; --border: #334155; }
         body.light { --bg:#f8fafc; --card:#fff; --text:#0f172a; --dim:#64748b; --border: #e2e8f0; }
 
-        body { margin:0; font-family: system-ui, -apple-system, sans-serif; background:var(--bg); color:var(--text); transition: background 0.3s; overflow-x: hidden; }
+        body { margin:0; font-family: system-ui, -apple-system, sans-serif; background:var(--bg); color:var(--text); transition: background 0.3s; overflow-x: hidden; touch-action: pan-y; }
 
         header {
             display:flex; justify-content:space-between; align-items: center;
             padding:10px 20px; border-bottom:1px solid var(--border);
-            position: sticky; top: 0; background: var(--bg); z-index: 1000;
+            position: sticky; top: 0; background: var(--bg); z-index: 1100;
         }
 
-        /* 🔥 사이드바 디자인 */
-        #sidebar { 
-            width: var(--sidebar-width); 
-            border-right: 1px solid var(--border); 
-            padding: 1rem;
+        /* 🔥 공통 패널 스타일 (사이드바 & 목차) */
+        .panel {
             background: var(--bg);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: fixed; top: 60px; bottom: 0; left: 0;
-            z-index: 950;
-            transform: translateX(-100%); /* 기본적으로 숨김 */
-            overflow-y: auto;
+            position: fixed; top: 60px; bottom: 0; z-index: 1050;
+            overflow-y: auto; box-shadow: 0 0 15px rgba(0,0,0,0.2);
         }
-        #sidebar.active { transform: translateX(0); }
+        #sidebar { width: var(--sidebar-width); left: 0; transform: translateX(-100%); border-right: 1px solid var(--border); padding: 1rem; }
+        #toc { width: var(--toc-width); right: 0; transform: translateX(100%); border-left: 1px solid var(--border); padding: 1rem; }
+        
+        #sidebar.active, #toc.active { transform: translateX(0); }
 
-        /* 🔥 본문 오버레이 효과 (사이드바 열릴 때) */
-        .content-overlay {
+        /* 🔥 오버레이 (메인 클릭 닫기용) */
+        .overlay {
             position: fixed; top: 60px; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 900;
-            display: none; /* 평소엔 숨김 */
-            backdrop-filter: blur(2px);
+            background: rgba(0, 0, 0, 0.4); z-index: 1000;
+            display: none; backdrop-filter: blur(2px);
         }
-        body.sidebar-open .content-overlay { display: block; }
+        body.panel-open .overlay { display: block; }
 
-        .cat-group { margin-bottom: 1.5rem; }
-        .cat-title { cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; padding: 10px; border-radius: 8px; background: rgba(128,128,128,0.1); margin-bottom: 5px; }
+        .cat-group { margin-bottom: 1.2rem; }
+        .cat-title { cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; padding: 10px; border-radius: 8px; background: rgba(128,128,128,0.1); }
         .cat-items { overflow: hidden; transition: max-height 0.3s ease; }
         .cat-items.collapsed { max-height: 0; }
-        .sidebar-item { padding: 8px 12px; cursor: pointer; font-size: 0.9rem; color: var(--dim); border-radius: 6px; }
+        .sidebar-item { padding: 8px 12px; cursor: pointer; font-size: 0.9rem; color: var(--dim); border-radius: 6px; margin-top: 2px; }
         .sidebar-item:hover { color: var(--primary); background: rgba(59, 130, 246, 0.1); }
 
         .content { padding: 2rem; max-width: 900px; margin: 0 auto; min-height: 100vh; }
-        #search { width: 100%; padding: 14px; margin-bottom: 25px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 1rem; }
+        #search { width: 100%; padding: 14px; margin-bottom: 25px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); outline:none; }
 
         .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.2rem; }
         .card { padding: 24px; background: var(--card); border-radius: 14px; cursor: pointer; border: 1px solid var(--border); transition: 0.2s; }
         .card:hover { border-color: var(--primary); transform: translateY(-3px); }
 
         #viewer { display: none; }
-        .markdown-body { padding: 20px; background: transparent !important; color: inherit !important; line-height: 1.7; }
+        .markdown-body { padding: 20px; background: transparent !important; color: inherit !important; }
         
-        #toc { 
-            width: 240px; border-left: 1px solid var(--border); padding: 1rem; background: var(--bg);
-            position: fixed; top: 60px; bottom: 0; right: -260px;
-            transition: 0.3s ease; z-index: 950;
-        }
-        #toc.active { right: 0; }
+        .btn-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; font-size: 0.9rem; }
+        .btn-primary { background: var(--primary); color: white; border: none; }
     </style>
 </head>
 
@@ -83,54 +77,84 @@
         <h1 style="margin:0; font-size: 1.1rem;">📚 자료 아카이브</h1>
     </div>
     <div style="display: flex; align-items: center; gap: 15px;">
-        <div id="toc-toggle" onclick="toggleTOC(event)" style="cursor:pointer; display:none; color:var(--primary); font-weight:600;">목차</div>
+        <div id="toc-toggle-btn" onclick="toggleTOC(event)" style="cursor:pointer; display:none; color:var(--primary); font-weight:bold;">목차</div>
         <div onclick="toggleTheme()" style="cursor:pointer; font-size: 1.2rem;">🌓</div>
     </div>
 </header>
 
 <main class="layout">
-    <div class="content-overlay" id="overlay" onclick="closeAllPanels()"></div>
+    <div class="overlay" id="main-overlay" onclick="closeAllPanels()"></div>
 
-    <aside id="sidebar"></aside>
+    <aside id="sidebar" class="panel"></aside>
 
     <section class="content" id="main-content">
         <div id="main-ui">
-            <input id="search" placeholder="보고 싶은 자료를 검색하세요..." />
+            <input id="search" placeholder="제목이나 태그로 검색..." />
             <div id="content-grid" class="cards"></div>
         </div>
 
         <div id="viewer">
-            <button onclick="closeMarkdown()" style="background:none; border:1px solid var(--dim); color:var(--dim); padding:8px 16px; border-radius:8px; cursor:pointer; margin-bottom:20px;">← 목록으로 돌아가기</button>
+            <div class="btn-row">
+                <button class="btn" onclick="closeMarkdown()">← 목록</button>
+                <button class="btn btn-primary" onclick="copyLink()">🔗 링크 복사</button>
+            </div>
             <article id="md-content" class="markdown-body"></article>
         </div>
     </section>
 
-    <aside id="toc"></aside>
+    <aside id="toc" class="panel"></aside>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common.min.js"></script>
 
 <script>
-    /* 🛠 마크다운 파서 (제목, 볼드, 코드블록, 리스트 지원) */
-    function miniMarked(md) {
+    /* 🛠 [핵심] 강화된 마크다운 파서 - 외부 라이브러리 없이도 # 인식 */
+    function robustMarked(md) {
         if (!md) return "";
-        let html = md
-            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-            .replace(/^\- (.*$)/gim, '<ul><li>$1</li></ul>').replace(/<\/ul>\s*<ul>/g, "")
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/`(.*?)`/g, '<code>$1</code>');
+        let lines = md.split('\n');
+        let html = "";
+        let inList = false;
+        let inCodeBlock = false;
 
-        // 코드 블록 처리
-        html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
-            return `<pre><code class="hljs">${code.trim()}</code></pre>`;
+        lines.forEach(line => {
+            // 코드 블록 처리
+            if (line.trim().startsWith('```')) {
+                inCodeBlock = !inCodeBlock;
+                html += inCodeBlock ? '<pre><code class="hljs">' : '</code></pre>';
+                return;
+            }
+            if (inCodeBlock) {
+                html += line + '\n';
+                return;
+            }
+
+            // 헤더 처리 (확실하게 인식하도록 정규식 보강)
+            if (line.startsWith('### ')) { html += `<h3>${line.substring(4)}</h3>`; return; }
+            if (line.startsWith('## ')) { html += `<h2>${line.substring(3)}</h2>`; return; }
+            if (line.startsWith('# ')) { html += `<h1>${line.substring(2)}</h1>`; return; }
+
+            // 리스트 처리
+            if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
+                if (!inList) { html += '<ul>'; inList = true; }
+                html += `<li>${line.trim().substring(2)}</li>`;
+                return;
+            } else if (inList) {
+                html += '</ul>';
+                inList = false;
+            }
+
+            // 일반 텍스트 및 인라인 요소
+            let processedLine = line
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/`(.*?)`/g, '<code>$1</code>');
+
+            if (processedLine.trim() === "") {
+                html += '<br>';
+            } else {
+                html += `<p>${processedLine}</p>`;
+            }
         });
-
-        // 일반 줄바꿈 처리 (h태그 등이 아닌 경우만)
-        return html.split('\n').map(line => {
-            return line.startsWith('<') ? line : `<p>${line}</p>`;
-        }).join('');
+        return html;
     }
 
     const sidebar = document.getElementById('sidebar');
@@ -139,61 +163,69 @@
     const mainUi = document.getElementById('main-ui');
     const viewer = document.getElementById('viewer');
     const mdContent = document.getElementById('md-content');
-    const tocToggle = document.getElementById('toc-toggle');
+    const tocToggleBtn = document.getElementById('toc-toggle-btn');
 
     let allData = [];
 
-    // 데이터 로드
     fetch('data.json').then(r => r.json()).then(data => {
         allData = data;
         renderSidebar(data);
         renderGrid(data);
+        // 초기 접속 시 파일 파라미터 확인
+        const p = new URLSearchParams(window.location.search).get('file');
+        if(p) openMarkdown(p);
     });
 
-    // 📱 사이드바 및 패널 제어
-    function toggleSidebar(e) {
-        if(e) e.stopPropagation();
-        const isOpen = sidebar.classList.toggle('active');
-        document.body.classList.toggle('sidebar-open', isOpen);
-    }
-
+    // 📱 패널 제어
+    function toggleSidebar(e) { if(e) e.stopPropagation(); sidebar.classList.toggle('active'); updateOverlay(); }
+    function toggleTOC(e) { if(e) e.stopPropagation(); toc.classList.toggle('active'); updateOverlay(); }
+    
     function closeAllPanels() {
         sidebar.classList.remove('active');
         toc.classList.remove('active');
-        document.body.classList.remove('sidebar-open');
+        updateOverlay();
     }
 
-    function toggleTOC(e) {
-        if(e) e.stopPropagation();
-        toc.classList.toggle('active');
+    function updateOverlay() {
+        const isOpen = sidebar.classList.contains('active') || toc.classList.contains('active');
+        document.body.classList.toggle('panel-open', isOpen);
     }
 
-    // 📱 스와이프 기능
-    let touchStartX = 0;
-    window.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive: true});
+    // 📱 스와이프 (사이드바 & 목차 통합)
+    let startX = 0;
+    window.addEventListener('touchstart', e => startX = e.changedTouches[0].screenX, {passive: true});
     window.addEventListener('touchend', e => {
-        const touchEndX = e.changedTouches[0].screenX;
-        const diff = touchEndX - touchStartX;
-        
-        // 오른쪽으로 밀기 (사이드바 열기)
-        if (diff > 90 && touchStartX < window.innerWidth * 0.3) {
-            if (!sidebar.classList.contains('active')) toggleSidebar();
+        const endX = e.changedTouches[0].screenX;
+        const diff = endX - startX;
+        const width = window.innerWidth;
+
+        if (Math.abs(diff) < 80) return; // 짧은 움직임 무시
+
+        if (diff > 0) { // 오른쪽으로 밀기
+            if (startX < width * 0.2) { if(!sidebar.classList.contains('active')) toggleSidebar(); } // 사이드바 열기
+            if (toc.classList.contains('active')) toggleTOC(); // 목차 닫기
+        } else { // 왼쪽으로 밀기
+            if (startX > width * 0.8) { if(!toc.classList.contains('active')) toggleTOC(); } // 목차 열기
+            if (sidebar.classList.contains('active')) toggleSidebar(); // 사이드바 닫기
         }
-        // 왼쪽으로 밀기 (패널 닫기)
-        if (diff < -90) closeAllPanels();
     }, {passive: true});
 
-    // 마크다운 열기
+    // 📄 마크다운 열기
     function openMarkdown(path) {
         fetch(path).then(r => r.text()).then(md => {
             mainUi.style.display = 'none';
             viewer.style.display = 'block';
-            tocToggle.style.display = 'block';
+            tocToggleBtn.style.display = 'block';
             
-            mdContent.innerHTML = miniMarked(md);
+            // 파서 호출
+            mdContent.innerHTML = robustMarked(md);
+            
+            // 코드 하이라이트
             document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
             
+            generateTOC();
             closeAllPanels();
+            history.pushState(null, "", `?file=${path}`);
             window.scrollTo(0,0);
         });
     }
@@ -201,8 +233,21 @@
     function closeMarkdown() {
         mainUi.style.display = 'block';
         viewer.style.display = 'none';
-        tocToggle.style.display = 'none';
+        tocToggleBtn.style.display = 'none';
         closeAllPanels();
+        history.pushState(null, "", window.location.pathname);
+    }
+
+    function generateTOC() {
+        toc.innerHTML = "<h3>목차</h3><hr>";
+        mdContent.querySelectorAll('h1, h2, h3').forEach((h, idx) => {
+            h.id = "h-" + idx;
+            const item = document.createElement('div');
+            item.className = 'sidebar-item';
+            item.textContent = h.textContent;
+            item.onclick = () => { h.scrollIntoView({behavior:'smooth'}); closeAllPanels(); };
+            toc.appendChild(item);
+        });
     }
 
     function renderSidebar(data) {
@@ -212,7 +257,7 @@
             return acc;
         }, {});
 
-        sidebar.innerHTML = '';
+        sidebar.innerHTML = '<h3>카테고리</h3>';
         Object.keys(grouped).forEach(cat => {
             const div = document.createElement('div');
             div.className = 'cat-group';
@@ -236,20 +281,24 @@
         data.forEach(i => {
             const c = document.createElement('div');
             c.className = 'card';
-            c.innerHTML = `<strong>${i.title}</strong><div style="margin-top:8px; font-size:0.8rem; color:var(--dim)">${i.category}</div>`;
+            c.innerHTML = `<strong>${i.title}</strong><div style="font-size:0.8rem; color:var(--dim); margin-top:8px;">${i.category}</div>`;
             c.onclick = () => openMarkdown(i.path);
             grid.appendChild(c);
         });
     }
 
-    function toggleTheme() {
-        document.body.classList.toggle('dark');
-        document.body.classList.toggle('light');
+    function copyLink() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            alert("공유 링크가 복사되었습니다!");
+        });
     }
+
+    function toggleTheme() { document.body.classList.toggle('dark'); document.body.classList.toggle('light'); }
 
     document.getElementById('search').oninput = (e) => {
         const k = e.target.value.toLowerCase();
-        renderGrid(allData.filter(i => i.title.toLowerCase().includes(k)));
+        renderGrid(allData.filter(i => i.title.toLowerCase().includes(k) || i.category.toLowerCase().includes(k)));
     };
 </script>
 
