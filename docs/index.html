@@ -12,7 +12,7 @@
         :root { 
             --primary: #3b82f6; 
             --sidebar-width: 260px;
-            --toc-width: 240px; /* 목차 너비 정의 */
+            --toc-width: 240px;
         }
 
         body.dark { --bg:#0f172a; --card:#1e293b; --text:#f8fafc; --dim:#94a3b8; --border: #334155; }
@@ -23,27 +23,27 @@
         header {
             display:flex; justify-content:space-between; align-items: center;
             padding:10px 20px; border-bottom:1px solid var(--border);
-            position: sticky; top: 0; background: var(--bg); z-index: 100;
+            position: sticky; top: 0; background: var(--bg); z-index: 1000;
         }
 
-        .layout { display: flex; min-height: calc(100vh - 60px); position: relative; overflow-x: hidden; /* 목차 숨김 시 overflow 방지 */ }
+        .layout { display: flex; min-height: calc(100vh - 60px); position: relative; }
 
-        /* 🔥 사이드바 스타일 (기본 숨김) */
+        /* 🔥 사이드바 (기본 숨김) */
         #sidebar { 
             width: var(--sidebar-width); 
             border-right: 1px solid var(--border); 
             padding: 1rem;
             background: var(--bg);
-            transition: all 0.3s ease;
+            transition: all 0.3s ease-in-out;
             overflow-y: auto;
-            /* 초기 상태: 왼쪽으로 완전히 밀어넣기 */
-            margin-left: calc(var(--sidebar-width) * -1 - 2rem); 
+            position: fixed; /* 본문을 클릭할 때 방해받지 않도록 고정 */
+            top: 60px; bottom: 0; left: calc(var(--sidebar-width) * -1 - 2rem);
+            z-index: 900;
             opacity: 0;
             visibility: hidden;
-            flex-shrink: 0;
         }
 
-        #sidebar.active { margin-left: 0; opacity: 1; visibility: visible; }
+        #sidebar.active { left: 0; opacity: 1; visibility: visible; }
 
         .cat-group { margin-bottom: 15px; }
         .cat-title { 
@@ -59,8 +59,16 @@
         }
         .sidebar-item:hover { color: var(--primary); background: rgba(59, 130, 246, 0.1); }
 
-        .content { flex: 1; padding: 2rem; max-width: 1000px; margin: 0 auto; transition: margin 0.3s ease; }
+        /* 🔥 메인 본문 영역 */
+        .content { 
+            flex: 1; padding: 2rem; max-width: 1000px; margin: 0 auto; 
+            transition: opacity 0.3s ease; 
+            min-height: 100vh;
+        }
         
+        /* 사이드바가 열렸을 때 본문에 살짝 투명 효과를 주어 클릭 유도 */
+        body.sidebar-open .content { opacity: 0.5; cursor: pointer; }
+
         #search {
             width: 100%; padding: 12px; margin-bottom: 20px;
             border-radius: 10px; border: 1px solid var(--border);
@@ -76,35 +84,32 @@
         .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; background: var(--primary); color: white; font-weight: bold; }
         .btn-secondary { background: var(--dim); }
 
-        .markdown-body { padding: 20px; background: transparent !important; color: inherit !important; }
+        /* 마크다운 컨텐츠 박스 */
+        .markdown-body { 
+            padding: 20px; 
+            background: transparent !important; 
+            color: inherit !important; 
+            font-size: 16px;
+            line-height: 1.6;
+        }
         body.dark .markdown-body { color: #e6edf3; }
 
-        /* 🔥 목차(TOC) 스타일 및 토글 (Updated) */
+        /* 🔥 목차(TOC) (기본 숨김) */
         #toc { 
             width: var(--toc-width); 
             border-left: 1px solid var(--border); 
             padding: 1rem;
             background: var(--bg);
             transition: all 0.3s ease;
-            overflow-y: auto;
-            /* 초기 상태: 오른쪽으로 완전히 밀어넣기 */
-            margin-right: calc(var(--toc-width) * -1 - 2rem); 
+            position: fixed; top: 60px; bottom: 0; right: calc(var(--toc-width) * -1 - 2rem);
+            z-index: 900;
             opacity: 0;
             visibility: hidden;
-            flex-shrink: 0;
+            overflow-y: auto;
         }
+        #toc.active { right: 0; opacity: 1; visibility: visible; }
 
-        /* 목차(TOC)가 보일 때 활성화되는 클래스 */
-        #toc.active { 
-            margin-right: 0;
-            opacity: 1;
-            visibility: visible;
-        }
-
-        @media (max-width: 768px) { 
-            /* 모바일에서는 목차 토글 버튼과 목차 자체를 숨깁니다. */
-            #toc, #toc-toggle-wrapper { display: none !important; } 
-        }
+        @media (max-width: 768px) { #toc, #toc-toggle { display: none !important; } }
     </style>
 </head>
 
@@ -112,19 +117,19 @@
 
 <header>
     <div style="display: flex; align-items: center; gap: 15px;">
-        <div onclick="toggleSidebar()" style="cursor:pointer; font-size: 1.5rem; user-select: none;">☰</div>
+        <div onclick="toggleSidebar(event)" style="cursor:pointer; font-size: 1.5rem; user-select: none;">☰</div>
         <h1 style="margin:0; font-size: 1.2rem;">📚 자료 아카이브</h1>
     </div>
-    <div id="toc-toggle-wrapper" style="display: flex; align-items: center; gap: 15px;">
-        <div id="toc-toggle" onclick="toggleTOC()" style="cursor:pointer; font-size: 1rem; user-select: none; color: var(--primary); transition: opacity 0.3s; opacity: 0.8;" title="목차 켜기/끄기">(목차)</div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div id="toc-toggle" onclick="toggleTOC(event)" style="cursor:pointer; font-size: 1rem; color: var(--primary); display: none;">(목차)</div>
         <div onclick="toggleTheme()" style="cursor:pointer; font-size: 1.2rem; user-select: none;">🌓</div>
     </div>
 </header>
 
-<main class="layout">
+<main class="layout" id="main-layout">
     <aside id="sidebar"></aside>
 
-    <section class="content">
+    <section class="content" id="main-content">
         <div id="main-ui">
             <input id="search" placeholder="검색어를 입력하세요..." />
             <div id="content-grid"></div>
@@ -135,7 +140,7 @@
                 <button class="btn btn-secondary" onclick="closeMarkdown()">← 목록으로</button>
                 <button class="btn" onclick="copyLink()">🔗 링크 복사</button>
             </div>
-            <div id="md-content" class="markdown-body"></div>
+            <article id="md-content" class="markdown-body"></article>
         </div>
     </section>
 
@@ -146,11 +151,12 @@
 <script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common.min.js"></script>
 
 <script>
-    // Marked 설정 (existing)
+    // 마크다운 설정
+    const renderer = new marked.Renderer();
     marked.setOptions({
-        breaks: true,
+        renderer: renderer,
         gfm: true,
-        headerIds: true,
+        breaks: true,
         highlight: function(code, lang) {
             const language = hljs.getLanguage(lang) ? lang : 'plaintext';
             return hljs.highlight(code, { language }).value;
@@ -159,101 +165,115 @@
 
     const sidebar = document.getElementById('sidebar');
     const toc = document.getElementById('toc');
+    const contentArea = document.getElementById('main-content');
     const grid = document.getElementById('content-grid');
     const mainUi = document.getElementById('main-ui');
     const viewer = document.getElementById('viewer');
     const mdContent = document.getElementById('md-content');
-    const searchInput = document.getElementById('search');
-    const tocToggle = document.getElementById('toc-toggle'); // 목차 토글 버튼
+    const tocToggle = document.getElementById('toc-toggle');
 
     let allData = [];
 
+    // 1. 데이터 로드
     fetch('data.json')
     .then(r => r.json())
     .then(data => {
         allData = data;
         renderSidebar(data);
         renderGrid(data);
-        
         const params = new URLSearchParams(window.location.search);
         if(params.has('file')) openMarkdown(params.get('file'));
     });
 
-    function toggleSidebar() {
+    // 2. 🔥 사이드바 토글 및 외부 클릭 닫기
+    function toggleSidebar(e) {
+        if(e) e.stopPropagation();
         sidebar.classList.toggle('active');
-        // 사이드바를 열 때 목차는 닫아주는게 UX상 좋습니다.
+        document.body.classList.toggle('sidebar-open', sidebar.classList.contains('active'));
+    }
+
+    // 메인 영역 클릭 시 사이드바 닫기
+    contentArea.addEventListener('click', () => {
         if (sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+            document.body.classList.remove('sidebar-open');
+        }
+        if (toc.classList.contains('active')) {
             toc.classList.remove('active');
-            updateTOCToggleStyle(false);
         }
+    });
+
+    // 3. 마크다운 열기 (렌더링 핵심)
+    function openMarkdown(path) {
+        fetch(path)
+        .then(r => r.text())
+        .then(md => {
+            mainUi.style.display = 'none';
+            viewer.style.display = 'block';
+            tocToggle.style.display = 'block';
+
+            // 🔥 마크다운 변환 및 주입
+            mdContent.innerHTML = marked.parse(md);
+
+            // 코드 하이라이팅 재적용
+            document.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+            
+            generateTOC();
+            history.pushState(null, "", `?file=${path}`);
+            window.scrollTo(0,0);
+            
+            // 사이드바 닫기
+            sidebar.classList.remove('active');
+            document.body.classList.remove('sidebar-open');
+        })
+        .catch(err => {
+            mdContent.innerHTML = "<p>문서를 불러오는 중 오류가 발생했습니다.</p>";
+        });
     }
 
-    // 🔥 목차(TOC) 토글 함수 (New)
-    function toggleTOC() {
-        // 문서를 열었을 때만 목차 토글이 작동하게 합니다.
-        if (viewer.style.display === 'block') {
-            toc.classList.toggle('active');
-            updateTOCToggleStyle(toc.classList.contains('active'));
-            // 목차를 열 때 사이드바는 닫아줍니다.
-            if (toc.classList.contains('active')) {
-                sidebar.classList.remove('active');
-            }
-        } else {
-            alert("문서를 먼저 열어주세요!");
-        }
-    }
-    
-    // 목차 토글 버튼 스타일 업데이트 (New)
-    function updateTOCToggleStyle(isActive) {
-        if (isActive) {
-            tocToggle.style.color = 'white'; // 켰을 때 색상
-            tocToggle.style.opacity = '1';
-        } else {
-            tocToggle.style.color = 'var(--primary)'; // 껐을 때 색상
-            tocToggle.style.opacity = '0.8';
-        }
+    // 4. 기타 UI 제어
+    function closeMarkdown() {
+        mainUi.style.display = 'block';
+        viewer.style.display = 'none';
+        tocToggle.style.display = 'none';
+        toc.classList.remove('active');
+        history.pushState(null, "", window.location.pathname);
     }
 
-    // renderSidebar (existing)
+    function toggleTOC(e) {
+        if(e) e.stopPropagation();
+        toc.classList.toggle('active');
+    }
+
     function renderSidebar(data) {
         sidebar.innerHTML = '';
         const grouped = groupByCategory(data);
-
         Object.keys(grouped).forEach(cat => {
             const groupDiv = document.createElement('div');
             groupDiv.className = 'cat-group';
-
             const title = document.createElement('div');
             title.className = 'cat-title';
             title.innerHTML = `<span>${cat}</span><span>▾</span>`;
-            
             const itemContainer = document.createElement('div');
             itemContainer.className = 'cat-items';
-
             title.onclick = (e) => {
                 e.stopPropagation();
                 itemContainer.classList.toggle('collapsed');
                 title.querySelector('span:last-child').innerText = itemContainer.classList.contains('collapsed') ? '▸' : '▾';
             };
-
             grouped[cat].forEach(i => {
                 const item = document.createElement('div');
                 item.className = 'sidebar-item';
                 item.textContent = i.title;
-                item.onclick = (e) => {
-                    e.stopPropagation();
-                    openMarkdown(i.path);
-                };
+                item.onclick = (e) => { e.stopPropagation(); openMarkdown(i.path); };
                 itemContainer.appendChild(item);
             });
-
             groupDiv.appendChild(title);
             groupDiv.appendChild(itemContainer);
             sidebar.appendChild(groupDiv);
         });
     }
 
-    // renderGrid (existing)
     function renderGrid(data) {
         grid.innerHTML = '';
         data.forEach(i => {
@@ -265,55 +285,19 @@
         });
     }
 
-    // openMarkdown (Updated to handle auto-showing TOC)
-    function openMarkdown(path) {
-        fetch(path)
-        .then(r => r.text())
-        .then(md => {
-            mainUi.style.display = 'none';
-            viewer.style.display = 'block';
-            mdContent.innerHTML = marked.parse(md);
-            document.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
-            generateTOC();
-            history.pushState(null, "", `?file=${path}`);
-            window.scrollTo(0,0);
-            
-            // 모바일 배려: 문서를 열면 메인 사이드바를 자동으로 닫아줍니다.
-            sidebar.classList.remove('active');
-            
-            // UX 배려: 문서를 열면 목차를 자동으로 켜줍니다 (User can close it).
-            toc.classList.add('active');
-            updateTOCToggleStyle(true);
-        });
-    }
-
-    // closeMarkdown (Updated to handle TOC and toggle style)
-    function closeMarkdown() {
-        mainUi.style.display = 'block';
-        viewer.style.display = 'none';
-        history.pushState(null, "", window.location.pathname);
-        
-        // 목록으로 돌아가면 두 사이드바 모두 닫습니다.
-        sidebar.classList.remove('active');
-        toc.classList.remove('active');
-        updateTOCToggleStyle(false);
-    }
-
-    // generateTOC (Updated to handle TOC element and items)
     function generateTOC() {
         toc.innerHTML = "<strong>목차</strong><hr>";
         mdContent.querySelectorAll('h1, h2, h3').forEach((h, idx) => {
             h.id = `header-${idx}`;
             const link = document.createElement('div');
-            link.className = 'sidebar-item'; // Reuse same style
+            link.className = 'sidebar-item';
             link.style.fontSize = '0.8rem';
             link.textContent = h.textContent;
-            link.onclick = () => h.scrollIntoView({ behavior: 'smooth' });
+            link.onclick = (e) => { e.stopPropagation(); h.scrollIntoView({ behavior: 'smooth' }); };
             toc.appendChild(link);
         });
     }
 
-    // utility functions (existing)
     function groupByCategory(data) {
         return data.reduce((acc, obj) => {
             const key = obj.category;
@@ -333,6 +317,7 @@
         alert("링크가 복사되었습니다!");
     }
 
+    const searchInput = document.getElementById('search');
     searchInput.addEventListener('input', e => {
         const k = e.target.value.toLowerCase();
         renderGrid(allData.filter(i => i.title.toLowerCase().includes(k)));
