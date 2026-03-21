@@ -114,23 +114,21 @@
 
 <script>
     /* 🛠 마크다운 렌더러 (라이브러리 미작동 시 대비한 자체 파서 포함) */
-    function renderMarkdown(md) {
-        if (!md) return "";
-        try {
-            // 라이브러리가 로드되었다면 사용
-            if (typeof marked !== 'undefined') {
-                return marked.parse(md);
-            }
-        } catch (e) { console.error("Marked error:", e); }
+        function renderMarkdown(md) {
+            if (!md) return "";
 
-        // 자체 파서 (최소한의 제목, 리스트, 볼드라도 표시하도록 함)
-        return md.replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                 .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                 .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                 .replace(/^\- (.*$)/gim, '<li>$1</li>')
-                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                 .replace(/\n/g, '<br>');
-    }
+            if (window.marked) {
+                return window.marked.parse(md);
+            }
+
+            // fallback
+            return md.replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                    .replace(/^\- (.*$)/gim, '<li>$1</li>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n/g, '<br>');
+        }
 
     const sidebar = document.getElementById('sidebar');
     const toc = document.getElementById('toc');
@@ -204,8 +202,9 @@
             tocBtn.style.display = 'block';
             
             mdContent.innerHTML = renderMarkdown(md);
-            document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
-            
+            if (window.hljs) {
+                document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+            }            
             generateTOC();
             closeAllPanels();
             history.pushState(null, "", `?file=${path}`);
