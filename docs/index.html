@@ -202,14 +202,17 @@
 
     /* 📄 자료 열기 */
     function openMarkdown(path) {
-        const fullPath = "/" + path;
+        const fullPath = path; // 🔥 여기 바꿔
 
         fetch(fullPath)
             .then(r => {
+                console.log("status:", r.status);
                 if (!r.ok) throw new Error(r.status);
                 return r.text();
             })
             .then(md => {
+                console.log("RAW:", md.slice(0, 100)); // 🔥 디버깅
+
                 document.getElementById('main-ui').style.display = 'none';
                 document.getElementById('viewer').style.display = 'block';
                 tocBtn.style.display = 'block';
