@@ -115,12 +115,16 @@
 <script>
     /* 🛠 마크다운 렌더러 (라이브러리 미작동 시 대비한 자체 파서 포함) */
 
-    function renderMarkdown(md) {
+    function renderMarkdown(md, path) {
         if (!md) return "";
 
-        // 🔥 모든 헤더 보정 (# ~ ######)
+        // 1️⃣ 헤더 보정 (##hello → ## hello)
         md = md.replace(/^(#{1,6})(\S)/gm, "$1 $2");
 
+        // 2️⃣ 상대경로 보정
+        md = resolveRelativePaths(md, path);
+
+        // 3️⃣ 파싱
         if (window.marked && window.marked.parse) {
             return window.marked.parse(md);
         }
@@ -133,7 +137,9 @@
         if (window.marked) {
             window.marked.setOptions({
                 breaks: true,
-                gfm: true
+                gfm: true,
+                headerIds: true,
+                mangle: false
             });
         }
     });
@@ -173,6 +179,43 @@
     const mdContent = document.getElementById('md-content');
     const tocBtn = document.getElementById('toc-toggle-btn');
     let allData = [];
+
+    const renderer = new marked.Renderer();
+
+    // 코드블럭 (highlight.js 적용)
+    renderer.code = (code, lang) => {
+        if (window.hljs) {
+            const validLang = hljs.getLanguage(lang) ? lang : 'plaintext';
+            const highlighted = hljs.highlight(code, { language: validLang }).value;
+            return `<pre><code class="hljs ${validLang}">${highlighted}</code></pre>`;
+        }
+        return `<pre><code>${code}</code></pre>`;
+    };
+
+    // 링크 (보안 + 새창)
+    renderer.link = (href, title, text) => {
+        const safeHref = href.startsWith('javascript:') ? '#' : href;
+        return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+    };
+
+    // 이미지 (lazy loading)
+    renderer.image = (href, title, text) => {
+        return `<img src="${href}" alt="${text}" loading="lazy" style="max-width:100%; border-radius:10px;">`;
+    };
+
+    marked.use({ renderer });
+
+    function preprocessMarkdown(md, basePath) {
+    if (!md) return "";
+
+    // 1️⃣ 헤더 보정
+    md = md.replace(/^(#{1,6})(\S)/gm, "$1 $2");
+
+    // 2️⃣ 상대경로 처리
+    md = resolveRelativePaths(md, basePath);
+
+    return md;
+}
 
     // 데이터 불러오기
     fetch('data.json').then(r => r.json()).then(data => {
@@ -239,25 +282,24 @@
                 if (!r.ok) throw new Error(r.status);
                 return r.text();
             })
-            .then(md => {
-                console.log("RAW:", md.slice(0, 100)); // 🔥 디버깅
-                document.getElementById('main-ui').style.display = 'none';
-                document.getElementById('viewer').style.display = 'block';
-                tocBtn.style.display = 'block';
-                md = resolveRelativePaths(md, path);
-                mdContent.innerHTML = renderMarkdown(md);
+        .then(md => {
+            document.getElementById('main-ui').style.display = 'none';
+            document.getElementById('viewer').style.display = 'block';
+            tocBtn.style.display = 'block';
 
-                if (window.hljs) {
-                    document.querySelectorAll('pre code')
-                        .forEach(el => hljs.highlightElement(el));
-                }
+            mdContent.innerHTML = renderMarkdown(md, path); // 🔥 여기
 
-                generateTOC();
-                closeAllPanels();
+            if (window.hljs) {
+                document.querySelectorAll('pre code')
+                    .forEach(el => hljs.highlightElement(el));
+            }
 
-                history.pushState(null, "", `?file=${path}`);
-                window.scrollTo(0, 0);
-            })
+            generateTOC();
+            closeAllPanels();
+
+            history.pushState(null, "", `?file=${path}`);
+            window.scrollTo(0, 0);
+        })
             .catch(err => {
                 console.error("fetch error:", err);
                 alert("파일을 찾을 수 없습니다: " + fullPath);
