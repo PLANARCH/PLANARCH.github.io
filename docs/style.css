@@ -1,11 +1,11 @@
 :root { 
     --primary: #3b82f6; 
-    --sidebar-width: 300px; /* 조금 더 넓게 조정 */
+    --sidebar-width: 300px;
     --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body.dark { 
-    --bg:#0d1117; /* GitHub 스타일 다크 */
+    --bg:#0d1117; 
     --card:#161b22; 
     --text:#c9d1d9; 
     --dim:#8b949e; 
@@ -29,6 +29,13 @@ body {
     overflow-x: hidden; 
 }
 
+/* 뷰어 열릴 때 배경 살짝 밀리는 효과 */
+body.viewer-open main {
+    filter: blur(2px);
+    transform: scale(0.98);
+    transition: var(--transition);
+}
+
 header { 
     display:flex; 
     justify-content:space-between; 
@@ -47,7 +54,7 @@ header {
     background: var(--bg); 
     transition: var(--transition); 
     position: fixed; 
-    top: 0; /* 헤더 포함 전체 높이 */
+    top: 0; 
     bottom: 0; 
     z-index: 1500; 
     overflow-y: auto; 
@@ -72,9 +79,9 @@ header {
     display: none; 
     backdrop-filter: blur(3px); 
 }
-.overlay.active { display: block; } /* 스크립트 클래스와 일치 */
+.overlay.active { display: block; }
 
-/* --- 계층형 트리 스타일 (강화) --- */
+/* --- 계층형 트리 & 애니메이션 (추가됨) --- */
 .tree-root, .tree-root ul {
     list-style: none;
     padding-left: 12px;
@@ -86,24 +93,48 @@ header {
     font-size: 0.9rem;
     position: relative;
 }
-/* 하위 메뉴 가이드라인 */
 .tree-root ul {
     border-left: 1px solid var(--border);
     margin-left: 8px;
+    /* 애니메이션용 설정 */
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
 }
+/* 열림 상태 클래스 */
+.tree-root ul.open {
+    max-height: 2000px;
+    opacity: 1;
+}
+
 .tree-folder { 
     font-weight: 600; 
     color: var(--text); 
     display: block;
-    padding: 4px 8px;
+    padding: 6px 8px;
     border-radius: 4px;
+    transition: background 0.2s;
 }
 .tree-folder:hover { background: rgba(59, 130, 246, 0.1); }
+
+/* 폴더 앞 화살표 애니메이션 */
+.tree-folder::before {
+    content: '▸';
+    display: inline-block;
+    margin-right: 8px;
+    transition: transform 0.3s ease;
+}
+.tree-folder.open::before {
+    transform: rotate(90deg);
+}
+
 .tree-file { 
     color: var(--dim); 
-    padding: 4px 8px;
+    padding: 6px 8px;
     display: block;
     border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
 }
 .tree-file:hover { 
     color: var(--primary); 
@@ -111,33 +142,45 @@ header {
 }
 
 /* --- 컨텐츠 그리드 --- */
-.content { padding: 2rem; max-width: 1100px; margin: 0 auto; min-height: 100vh; }
+.content { 
+    padding: 2rem; 
+    max-width: 1100px; 
+    margin: 0 auto; 
+    min-height: 100vh;
+    transition: var(--transition);
+}
 .cards { 
     display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
     gap: 1.5rem; 
 }
-.card { 
-    padding: 24px; 
-    background: var(--card); 
-    border-radius: 16px; 
-    cursor: pointer; 
-    border: 1px solid var(--border); 
-    transition: all 0.2s ease; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
+.card {
+    padding: 24px;
+    background: var(--card);
+    border-radius: 16px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow 0.2s ease, 
+                border-color 0.2s ease;
+    user-select: none;
 }
-.card:hover { 
-    border-color: var(--primary); 
-    transform: translateY(-5px); 
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15); 
+.card:hover {
+    border-color: var(--primary);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+.card:active {
+    transform: scale(0.94);
+    background: rgba(59, 130, 246, 0.05);
 }
 .card .icon { font-size: 2.5rem; margin-bottom: 12px; }
 .card strong { font-size: 1rem; color: var(--text); }
 
-/* 폴더/파일 하단 포인트 라인 */
 .folder-item { border-bottom: 4px solid #ffca28 !important; }
 .file-item { border-bottom: 4px solid #42a5f5 !important; }
 
@@ -150,6 +193,7 @@ header {
     background: rgba(59, 130, 246, 0.1);
     border-radius: 20px;
     transition: 0.2s;
+    cursor: pointer;
 }
 .breadcrumb:hover { background: rgba(59, 130, 246, 0.2); }
 
@@ -181,12 +225,13 @@ header {
     max-width: 850px; 
     margin: 0 auto;
     line-height: 1.6;
+    background: transparent !important;
 }
 
-/* 모바일 대응 */
+/* 모바일 대응 (오타 수정됨) */
 @media (max-width: 768px) {
     .content { padding: 1rem; }
     .cards { grid-template-columns: 1fr 1fr; gap: 1rem; }
     .card { padding: 15px; }
-    --sidebar-width: 260px;
+    :root { --sidebar-width: 260px; }
 }

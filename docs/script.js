@@ -145,19 +145,26 @@ function buildTreeUI(obj, parentElement, pathAccumulator = "") {
         const fullPath = pathAccumulator ? `${pathAccumulator}/${key}` : key;
         const li = document.createElement('li');
 
-        if (val.path) { // 파일
+        if (val.path) { // 파일인 경우
             li.innerHTML = `<span class="tree-file">📄 ${val.title}</span>`;
             li.onclick = (e) => { e.stopPropagation(); openMarkdown(val.path); };
-        } else { // 폴더
+        } else { // 폴더인 경우
+            // tree-folder 클래스 부여
             li.innerHTML = `<span class="tree-folder">📁 ${key}</span>`;
+            
             const subUl = document.createElement('ul');
-            subUl.style.display = 'none';
+            subUl.className = 'tree-sub'; // CSS 애니메이션 대상
             
             li.onclick = (e) => {
                 e.stopPropagation();
-                const isOpen = subUl.style.display === 'block';
-                subUl.style.display = isOpen ? 'none' : 'block';
-                renderFolders(fullPath); // 사이드바 클릭 시 그리드도 연동
+                
+                // 1. 애니메이션 클래스 토글
+                const folderSpan = li.querySelector('.tree-folder');
+                subUl.classList.toggle('open');
+                folderSpan.classList.toggle('open');
+                
+                // 2. 그리드 영역 폴더 이동
+                renderFolders(fullPath); 
             };
             
             buildTreeUI(val, subUl, fullPath);
@@ -184,7 +191,8 @@ async function openMarkdown(path, pushHistory = true) {
 
         processedMd = processedMd.replace(/^(#{1,6})([^#\s\d])/gm, '$1 $2');
         mdContent.innerHTML = marked.parse(processedMd);
-        
+
+        document.body.classList.add('viewer-open'); // 배경 효과용 클래스 추가        
         viewer.classList.add('active');
         document.body.style.overflow = 'hidden';
         if (window.hljs) document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
@@ -198,6 +206,7 @@ async function openMarkdown(path, pushHistory = true) {
 }
 
 function closeMarkdown() {
+    document.body.classList.remove('viewer-open'); 
     if (new URLSearchParams(window.location.search).get('file')) {
         history.back();
     } else {
