@@ -10,25 +10,33 @@
     const mdContent = document.getElementById('md-content');
 
     const savedTheme = localStorage.getItem('archive-theme') || 'dark';
-    document.body.className = savedTheme;
-    
-    if(savedTheme != 'dark'){
-        document.getElementById("dark_mode").innerHTML = "🌗"
-    }else{
-        document.getElementById("dark_mode").innerHTML = "🌓"
-    }
-    
-    function toggleTheme() {
-        const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
-        document.body.className = newTheme;
-        if(newTheme!='dark'){
-            document.getElementById("dark_mode").innerHTML = "🌗"
-        }else{
-            document.getElementById("dark_mode").innerHTML = "🌓"
+    const THEME_KEY = 'archive-theme';
+
+    function applyTheme(theme) {
+        document.body.classList.remove('light', 'dark');
+        document.body.classList.add(theme);
+
+        const btn = document.getElementById("dark_mode");
+        if (btn) {
+            btn.textContent = theme === 'dark' ? "🌓" : "🌗";
         }
-        localStorage.setItem('archive-theme', newTheme);
     }
 
+    function initTheme() {
+        const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+        applyTheme(savedTheme);
+    }
+
+    function toggleTheme() {
+        const isDark = document.body.classList.contains('dark');
+        const newTheme = isDark ? 'light' : 'dark';
+
+        applyTheme(newTheme);
+        localStorage.setItem(THEME_KEY, newTheme);
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+        initTheme();
+    });
     // 2. data.json 로드 시 캐시 방지
     fetch(`data.json?v=${VERSION}`)
     .then(r => {
@@ -234,7 +242,6 @@
         else if (folder) renderCategoryFiles(folder, false, false);
         else renderRootFolders(false);
     };
-
     document.getElementById('search').oninput = (e) => {
         const k = e.target.value.toLowerCase();
         if(!k) { renderRootFolders(); return; }
