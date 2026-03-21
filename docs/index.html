@@ -138,6 +138,35 @@
         }
     });
 
+
+    function resolveRelativePaths(md, basePath) {
+        const baseDir = basePath.substring(0, basePath.lastIndexOf('/') + 1);
+
+        // 이미지 처리
+        md = md.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, src) => {
+            if (
+                src.startsWith('http') ||
+                src.startsWith('/') ||
+                src.startsWith(baseDir) // 🔥 중복 방지
+            ) return match;
+
+            return `![${alt}](${baseDir}${src})`;
+        });
+
+        // 링크 처리
+        md = md.replace(/\[(.*?)\]\((.*?)\)/g, (match, text, href) => {
+            if (
+                href.startsWith('http') ||
+                href.startsWith('/') ||
+                href.startsWith(baseDir) // 🔥 중복 방지
+            ) return match;
+
+            return `[${text}](${baseDir}${href})`;
+        });
+
+        return md;
+    }
+
     // 🔥 앱 코드는 밖에
     const sidebar = document.getElementById('sidebar');
     const toc = document.getElementById('toc');
@@ -215,6 +244,7 @@
                 document.getElementById('main-ui').style.display = 'none';
                 document.getElementById('viewer').style.display = 'block';
                 tocBtn.style.display = 'block';
+                md = resolveRelativePaths(md, path);
                 mdContent.innerHTML = renderMarkdown(md);
 
                 if (window.hljs) {
