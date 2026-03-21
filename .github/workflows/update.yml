@@ -1,0 +1,10 @@
+- name: Generate data.json
+        run: node docs/generate.js # 스크립트가 docs 안에 있다면 이 경로 유지
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .  # 경로를 직접 지정하지 않고 모든 변경사항(data.json 포함) 추가
+          git commit -m "chore: auto-update data.json" || exit 0
+          git push
