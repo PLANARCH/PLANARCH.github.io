@@ -15,6 +15,7 @@
     function toggleTheme() {
         const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
         document.body.className = newTheme;
+        document.getElementById("dark_mode").innerHTML = "🌗"
         localStorage.setItem('archive-theme', newTheme);
     }
 
