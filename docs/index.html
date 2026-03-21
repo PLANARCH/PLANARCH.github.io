@@ -118,7 +118,13 @@
             if (!md) return "";
 
             if (window.marked) {
-                return window.marked.parse(md);
+                window.marked.setOptions({
+                    breaks: true,
+                    gfm: true,
+                    mangle: false,
+                    headerIds: false
+                });
+                return window.marked.parse(md, { async: false });
             }
 
             // fallback
@@ -129,13 +135,6 @@
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                     .replace(/\n/g, '<br>');
         }
-
-        window.marked.setOptions({
-            breaks: true,
-            gfm: true,
-            mangle: false,
-            headerIds: false
-        });
 
     const sidebar = document.getElementById('sidebar');
     const toc = document.getElementById('toc');
