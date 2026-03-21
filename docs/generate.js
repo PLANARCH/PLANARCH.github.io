@@ -1,21 +1,21 @@
 const fs = require('fs');
 const path = require('path');
 
-const baseDir = path.join(__dirname); // ✅ 핵심 수정
+// 스크립트 위치에 상관없이 프로젝트 루트를 기준으로 설정
+const baseDir = process.cwd(); 
 
 let result = [];
 
-// docs 안의 폴더 읽기
 const categories = fs.readdirSync(baseDir);
+
+// 제외할 목록
+const exclude = ['node_modules', '.git', '.github', 'scripts'];
 
 categories.forEach(category => {
   const categoryPath = path.join(baseDir, category);
 
-  // 폴더만 처리
   if (!fs.statSync(categoryPath).isDirectory()) return;
-
-  // 숨김 폴더 제외
-  if (category.startsWith('.')) return;
+  if (category.startsWith('.') || exclude.includes(category)) return;
 
   const files = fs.readdirSync(categoryPath);
 
@@ -24,16 +24,12 @@ categories.forEach(category => {
       result.push({
         category,
         title: file.replace('.md', '').replace(/-/g, ' '),
-        path: `${category}/${file}`
+        // ✅ 웹 브라우저에서는 역슬래시(\)가 아닌 슬래시(/)를 써야 합니다.
+        path: `${category}/${file}`.replace(/\\/g, '/') 
       });
     }
   });
 });
 
-// JSON 저장
-fs.writeFileSync(
-  path.join(baseDir, 'data.json'),
-  JSON.stringify(result, null, 2)
-);
-
-console.log('✅ data.json 생성 완료:', result);
+fs.writeFileSync(path.join(baseDir, 'data.json'), JSON.stringify(result, null, 2));
+console.log('✅ data.json 생성 완료!');
