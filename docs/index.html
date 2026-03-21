@@ -115,23 +115,25 @@
 <script>
     /* 🛠 마크다운 렌더러 (라이브러리 미작동 시 대비한 자체 파서 포함) */
 
-function renderMarkdown(md) {
-    if (!md) return "";
+    function renderMarkdown(md) {
+        if (!md) return "";
 
-    if (window.marked) {
-            if (window.marked) {
-                window.marked.setOptions({
-                    breaks: true,
-                    gfm: true,
-                    mangle: false,
-                    headerIds: false
-                });
-            }
-        return window.marked(md); // 🔥 이걸로 바꿔
+        if (window.marked) {
+            return window.marked(md);
+        }
+
+        return "<pre>" + md + "</pre>";
     }
 
-    return "<pre>" + md + "</pre>";
-}
+    // 🔥 옵션은 따로
+    if (window.marked) {
+        window.marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+    }
+
+    // 🔥 앱 코드는 밖에
     const sidebar = document.getElementById('sidebar');
     const toc = document.getElementById('toc');
     const mdContent = document.getElementById('md-content');
