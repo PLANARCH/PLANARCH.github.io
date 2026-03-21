@@ -218,45 +218,51 @@
 
     // 3. 이미지 및 마크다운 내 리소스 캐시 방지 적용
     function fixImagePaths(md, path) {
-        // path: "TEST/react.md" -> folderPath: "TEST"
-        const folderPath = path.substring(0, path.lastIndexOf('/')); 
+        // 1. path: "TEST/react.md" -> folder: "TEST" 추출
+        const folder = path.substring(0, path.lastIndexOf('/')); 
         
         return md.replace(/!\[(.*?)\]\((?!http|\/)(.*?)\)/g, (match, alt, src) => {
-            // 🌟 prefix를 "docs"로 수정 (현재 저장소 구조에 맞춤)
-            const prefix = "docs"; 
+            // 2. folder가 있으면 "TEST/photo/photo.jpg", 없으면 그냥 "photo/photo.jpg"
+            // 쿼리 스트링(?v=...)을 붙여 캐시 방지
+            const fixedPath = folder ? `${folder}/${src}?v=${VERSION}` : `${src}?v=${VERSION}`;
             
-            // 최종 결과: docs/TEST/photo/test.jpg?v=1774...
-            const fixedPath = `${prefix}/${folderPath}/${src}?v=${VERSION}`;
+            console.log("🛠️ 실제 이미지 요청 주소:", window.location.origin + "/" + fixedPath);
             return `![${alt}](${fixedPath})`;
         });
     }
+    
     async function openMarkdown(path, pushHistory = true) {
-        // 1. 제목 설정 (데이터에서 찾거나 파일명에서 추출)
+        // 🌟 [제목 복구] 데이터에서 찾거나 파일명에서 추출
         const item = allData.find(d => d.path === path);
         const title = item ? item.title : path.split('/').pop().replace('.md', '');
-        document.getElementById('viewer-title').textContent = title;
+        
+        const titleElement = document.getElementById('viewer-title');
+        if (titleElement) titleElement.textContent = title;
 
         try {
+            // 파일 로드 (캐시 방지 v= 포함)
             let md = mdCache[path] || await fetch(`${path}?v=${VERSION}`).then(r => r.text());
             mdCache[path] = md;
 
-            // 2. 경로 보정 (전체 path 전달)
+            // 이미지 경로 보정
             const fixedMd = fixImagePaths(md, path);
             
             mdContent.innerHTML = marked.parse(fixedMd);
-            viewer.classList.add('active');
+            viewer.classList.add('active'); 
             document.body.style.overflow = 'hidden';
 
             if (window.hljs) document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
 
+            // 히스토리 관리 (뒤로가기 제스처 대응)
             if (pushHistory) {
                 const currentFile = new URLSearchParams(window.location.search).get('file');
-                if (currentFile !== path) history.pushState({view: 'file', path: path}, "", `?file=${encodeURIComponent(path)}`);
+                if (currentFile !== path) {
+                    history.pushState({view: 'file', path: path}, "", `?file=${encodeURIComponent(path)}`);
+                }
             }
             closeAllPanels();
         } catch (e) {
             console.error("로드 에러:", e);
-            mdContent.innerHTML = "<p>문서를 불러오는 중 오류가 발생했습니다.</p>";
         }
     }
 
