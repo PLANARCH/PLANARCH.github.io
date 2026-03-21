@@ -18,7 +18,7 @@
         body.dark { --bg:#0f172a; --card:#1e293b; --text:#f8fafc; --dim:#94a3b8; --border: #334155; }
         body.light { --bg:#f8fafc; --card:#fff; --text:#0f172a; --dim:#64748b; --border: #e2e8f0; }
 
-        body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); transition: background 0.3s; overflow-x: hidden; }
+        body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); transition: background 0.3s; overflow-x: hidden; touch-action: pan-y; }
 
         header {
             display:flex; justify-content:space-between; align-items: center;
@@ -26,12 +26,12 @@
             position: sticky; top: 0; background: var(--bg); z-index: 1100;
         }
 
-        /* 📁 패널 스타일 */
+        /* 📁 사이드바 및 목차 패널 */
         .panel {
             background: var(--bg);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: fixed; top: 0; bottom: 0; z-index: 1500;
-            overflow-y: auto; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: fixed; top: 60px; bottom: 0; z-index: 1500;
+            overflow-y: auto; box-shadow: 0 0 15px rgba(0,0,0,0.3);
         }
         #sidebar { width: var(--sidebar-width); left: 0; transform: translateX(-100%); border-right: 1px solid var(--border); padding: 1rem; }
         #toc { width: var(--toc-width); right: 0; transform: translateX(100%); border-left: 1px solid var(--border); padding: 1rem; }
@@ -41,25 +41,27 @@
         /* 🌑 오버레이 */
         .overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.6); z-index: 1400;
-            display: none; backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.4); z-index: 1400;
+            display: none; backdrop-filter: blur(2px);
         }
         body.panel-open .overlay { display: block; }
 
-        /* 📂 그리드 & 카드 */
+        /* 🗂️ 메인 콘텐츠 영역 */
         .content { padding: 2rem; max-width: 1000px; margin: 0 auto; min-height: 100vh; }
-        .breadcrumb { margin-bottom: 20px; font-size: 0.9rem; color: var(--primary); cursor: pointer; }
-        
-        .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.2rem; }
+        .breadcrumb { margin-bottom: 20px; font-size: 0.9rem; color: var(--primary); cursor: pointer; display: none; }
+        #search { width: 100%; padding: 14px; margin-bottom: 25px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); outline: none; box-sizing: border-box;}
+
+        /* 🃏 그리드 및 카드 스타일 */
+        .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.2rem; }
         .card { 
-            padding: 30px 20px; background: var(--card); border-radius: 14px; 
-            cursor: pointer; border: 1px solid var(--border); transition: 0.2s;
+            padding: 24px; background: var(--card); border-radius: 14px; cursor: pointer; 
+            border: 1px solid var(--border); transition: 0.2s; position: relative;
             display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;
         }
-        .card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .card i { font-size: 2rem; color: var(--primary); }
+        .card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .card .icon { font-size: 2.5rem; margin-bottom: 5px; }
 
-        /* 📄 팝업 뷰어 (z-index 최상위) */
+        /* 📄 팝업 뷰어 (z-index 팝업 형태) */
         #viewer { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: var(--bg); z-index: 2000; display: none; overflow-y: auto;
@@ -69,14 +71,17 @@
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--border); z-index: 2001;
         }
-        .close-btn { font-size: 1.5rem; cursor: pointer; padding: 5px 10px; border-radius: 5px; }
-        .close-btn:hover { background: rgba(255,0,0,0.1); }
-        .markdown-body { padding: 40px 20px; max-width: 800px; margin: 0 auto; }
-
-        /* 사이드바 아이템 */
-        .cat-title { cursor: pointer; font-weight: bold; padding: 10px; border-radius: 8px; background: rgba(128,128,128,0.1); margin: 10px 0 5px 0; }
+        .viewer-close { font-size: 1.8rem; cursor: pointer; line-height: 1; }
+        .markdown-body { padding: 40px 20px; max-width: 850px; margin: 0 auto; background: transparent !important; }
+        
+        /* 사이드바 구성 */
+        .cat-group { margin-bottom: 1rem; }
+        .cat-title { cursor: pointer; font-weight: bold; padding: 10px; border-radius: 8px; background: rgba(128,128,128,0.1); margin-bottom: 5px; display: flex; justify-content: space-between; }
         .sidebar-item { padding: 8px 12px; cursor: pointer; font-size: 0.9rem; color: var(--dim); border-radius: 6px; }
         .sidebar-item:hover { color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+
+        .btn-row { display: flex; gap: 10px; }
+        .btn { padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; }
     </style>
 </head>
 
@@ -85,7 +90,7 @@
 <header>
     <div style="display: flex; align-items: center; gap: 15px;">
         <div onclick="toggleSidebar(event)" style="cursor:pointer; font-size: 1.5rem;">☰</div>
-        <h1 style="margin:0; font-size: 1.1rem; cursor:pointer;" onclick="renderRoot()">📚 자료 아카이브</h1>
+        <h1 style="margin:0; font-size: 1.1rem; cursor:pointer;" onclick="renderRootFolders()">📚 자료 아카이브</h1>
     </div>
     <div style="display: flex; align-items: center; gap: 15px;">
         <div id="toc-toggle-btn" onclick="toggleTOC(event)" style="cursor:pointer; display:none; color:var(--primary); font-weight:bold;">목차</div>
@@ -95,22 +100,23 @@
 
 <main>
     <div class="overlay" onclick="closeAllPanels()"></div>
+
     <aside id="sidebar" class="panel"></aside>
 
     <section class="content">
-        <div id="breadcrumb" class="breadcrumb" onclick="renderRoot()"></div>
+        <div id="breadcrumb" class="breadcrumb" onclick="renderRootFolders()">← 홈으로 (전체 폴더)</div>
         <div id="main-ui">
-            <input id="search" style="width:100%; padding:14px; margin-bottom:25px; border-radius:12px; border:1px solid var(--border); background:var(--card); color:var(--text); box-sizing:border-box;" placeholder="자료 검색..." />
+            <input id="search" placeholder="자료 검색..." />
             <div id="content-grid" class="cards"></div>
         </div>
     </section>
 
     <div id="viewer">
         <div class="viewer-header">
-            <div id="viewer-title" style="font-weight: bold;">파일명</div>
-            <div style="display:flex; gap: 15px; align-items: center;">
-                <button class="btn" onclick="copyLink()" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">🔗 링크 복사</button>
-                <div class="close-btn" onclick="closeMarkdown()">✕</div>
+            <div id="viewer-title" style="font-weight: bold; font-size: 1.1rem;"></div>
+            <div class="btn-row">
+                <button class="btn" onclick="copyLink()" style="background:var(--primary); color:white; border:none;">🔗 링크 복사</button>
+                <div class="viewer-close" onclick="closeMarkdown()">×</div>
             </div>
         </div>
         <article id="md-content" class="markdown-body"></article>
@@ -123,124 +129,152 @@
 <script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common.min.js"></script>
 
 <script>
-    let allData = [];
-    let currentCategory = null;
+    /* --- ⚙️ 마크다운 처리 엔진 (기존 로직 유지) --- */
+    const renderer = new marked.Renderer();
+    renderer.code = (code, lang) => {
+        if (window.hljs) {
+            const validLang = hljs.getLanguage(lang) ? lang : 'plaintext';
+            const highlighted = hljs.highlight(code, { language: validLang }).value;
+            return `<pre><code class="hljs ${validLang}">${highlighted}</code></pre>`;
+        }
+        return `<pre><code>${code}</code></pre>`;
+    };
+    renderer.link = (href, title, text) => {
+        const safeHref = href.startsWith('javascript:') ? '#' : href;
+        return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+    };
+    renderer.image = (href, title, text) => {
+        return `<img src="${href}" alt="${text}" loading="lazy" style="max-width:100%; border-radius:10px;">`;
+    };
+    marked.use({ renderer });
 
+    function resolveRelativePaths(md, basePath) {
+        if (!basePath) return md;
+        const baseDir = basePath.substring(0, basePath.lastIndexOf('/') + 1);
+        // 이미지 및 링크 상대경로 치환
+        md = md.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, src) => {
+            if (src.startsWith('http') || src.startsWith('/') || src.startsWith(baseDir)) return match;
+            return `![${alt}](${baseDir}${src})`;
+        });
+        md = md.replace(/\[(.*?)\]\((.*?)\)/g, (match, text, href) => {
+            if (href.startsWith('http') || href.startsWith('/') || href.startsWith(baseDir)) return match;
+            return `[${text}](${baseDir}${href})`;
+        });
+        return md;
+    }
+
+    function renderMarkdown(md, path) {
+        if (!md) return "";
+        md = md.replace(/^(#{1,6})(\S)/gm, "$1 $2"); // 헤더 공백 보정
+        md = resolveRelativePaths(md, path);
+        return marked.parse(md);
+    }
+
+    /* --- 🚀 앱 코어 로직 --- */
     const sidebar = document.getElementById('sidebar');
     const toc = document.getElementById('toc');
     const contentGrid = document.getElementById('content-grid');
     const breadcrumb = document.getElementById('breadcrumb');
     const viewer = document.getElementById('viewer');
+    const mdContent = document.getElementById('md-content');
+    const tocBtn = document.getElementById('toc-toggle-btn');
+    
+    let allData = [];
+    let currentCategory = null;
 
-    // 1. 데이터 로드
+    // 데이터 로드
     fetch('data.json').then(r => r.json()).then(data => {
         allData = data;
         renderSidebar(data);
-        renderRoot();
+        renderRootFolders();
         
+        // URL 파라미터 체크 (공유 링크 대응)
         const file = new URLSearchParams(window.location.search).get('file');
         if(file) openMarkdown(file);
-    });
+    }).catch(err => console.error("Data Load Error:", err));
 
-    // 2. 루트 렌더링 (폴더 목록)
-    function renderRoot() {
+    /* 📁 1. 폴더가 root 취급받는 UI 렌더링 */
+    function renderRootFolders() {
         currentCategory = null;
-        breadcrumb.innerHTML = "";
+        breadcrumb.style.display = 'none';
+        contentGrid.innerHTML = '';
+        
+        // 카테고리 중복 제거 추출
         const categories = [...new Set(allData.map(item => item.category))];
         
-        contentGrid.innerHTML = "";
         categories.forEach(cat => {
             const card = document.createElement('div');
             card.className = 'card';
-            card.innerHTML = `<span>📁</span><strong>${cat}</strong>`;
-            card.onclick = () => renderCategory(cat);
+            card.innerHTML = `<div class="icon">📁</div><strong>${cat}</strong><div style="font-size:0.8rem; color:var(--dim);">폴더 열기</div>`;
+            card.onclick = () => renderCategoryFiles(cat);
             contentGrid.appendChild(card);
         });
-        window.scrollTo(0,0);
     }
 
-    // 3. 특정 카테고리 진입 (파일 목록)
-    function renderCategory(cat) {
+    /* 📂 2. 특정 카테고리 진입 시 파일 목록 렌더링 */
+    function renderCategoryFiles(cat) {
         currentCategory = cat;
-        breadcrumb.innerHTML = `← 홈으로 돌아가기 (${cat})`;
-        
+        breadcrumb.style.display = 'block';
+        breadcrumb.textContent = `← 홈으로 (${cat} 폴더 내 자료)`;
+        contentGrid.innerHTML = '';
+
         const files = allData.filter(item => item.category === cat);
-        contentGrid.innerHTML = "";
-        files.forEach(file => {
+        files.forEach(i => {
             const card = document.createElement('div');
             card.className = 'card';
-            card.style.padding = "20px";
-            card.innerHTML = `<span>📄</span><div style="font-size:0.9rem">${file.title}</div>`;
-            card.onclick = () => openMarkdown(file.path);
+            card.innerHTML = `<div class="icon">📄</div><strong>${i.title}</strong><div style="font-size:0.8rem; color:var(--dim);">${i.category}</div>`;
+            card.onclick = () => openMarkdown(i.path);
             contentGrid.appendChild(card);
         });
         closeAllPanels();
-        window.scrollTo(0,0);
     }
 
-    // 4. 사이드바 렌더링 (버그 수정: 카테고리 클릭 시 즉시 이동)
-    function renderSidebar(data) {
-        const categories = [...new Set(data.map(item => item.category))];
-        sidebar.innerHTML = "<h3>카테고리</h3>";
-        
-        categories.forEach(cat => {
-            const title = document.createElement('div');
-            title.className = 'cat-title';
-            title.innerHTML = `📁 ${cat}`;
-            title.onclick = (e) => {
-                e.stopPropagation();
-                renderCategory(cat);
-            };
-            sidebar.appendChild(title);
-        });
-    }
-
-    // 5. 팝업 뷰어 열기 (z-index 처리)
+    /* 📄 4. 팝업 형태의 뷰어 열기 */
     function openMarkdown(path) {
         const item = allData.find(d => d.path === path);
         document.getElementById('viewer-title').textContent = item ? item.title : "문서 보기";
 
         fetch(path)
-            .then(r => r.ok ? r.text() : Promise.reject())
+            .then(r => { if (!r.ok) throw new Error(); return r.text(); })
             .then(md => {
                 viewer.style.display = 'block';
-                document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
-                document.getElementById('toc-toggle-btn').style.display = 'block';
+                document.body.style.overflow = 'hidden'; // 뒷배경 스크롤 방지
+                tocBtn.style.display = 'block';
 
-                document.getElementById('md-content').innerHTML = marked.parse(md);
-                
+                mdContent.innerHTML = renderMarkdown(md, path);
+
                 if (window.hljs) {
                     document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
                 }
 
                 generateTOC();
+                closeAllPanels();
                 history.pushState(null, "", `?file=${path}`);
             })
-            .catch(() => alert("파일을 로드할 수 없습니다."));
+            .catch(() => alert("파일을 로드할 수 없습니다. 경로를 확인해주세요."));
     }
 
     function closeMarkdown() {
         viewer.style.display = 'none';
         document.body.style.overflow = 'auto';
-        document.getElementById('toc-toggle-btn').style.display = 'none';
-        closeAllPanels();
+        tocBtn.style.display = 'none';
         history.pushState(null, "", window.location.pathname);
     }
 
-    // 6. 패널 제어 (2번 클릭 버그 해결)
+    /* 📱 3. 패널 제어 (토글 버그 수정: 한 번에 닫히도록 개선) */
     function toggleSidebar(e) {
         if(e) e.stopPropagation();
-        const isActive = sidebar.classList.contains('active');
-        closeAllPanels(); // 일단 다 닫고
-        if(!isActive) sidebar.classList.add('active'); // 꺼져있었으면 켠다
+        const isOpen = sidebar.classList.contains('active');
+        closeAllPanels(); 
+        if (!isOpen) sidebar.classList.add('active'); // 꺼져있던 상태면 켜기
         updateOverlay();
     }
 
     function toggleTOC(e) {
         if(e) e.stopPropagation();
-        const isActive = toc.classList.contains('active');
+        const isOpen = toc.classList.contains('active');
         closeAllPanels();
-        if(!isActive) toc.classList.add('active');
+        if (!isOpen) toc.classList.add('active');
         updateOverlay();
     }
 
@@ -251,20 +285,36 @@
     }
 
     function updateOverlay() {
-        const anyActive = sidebar.classList.contains('active') || toc.classList.contains('active');
-        document.body.classList.toggle('panel-open', anyActive);
+        const isActive = sidebar.classList.contains('active') || toc.classList.contains('active');
+        document.body.classList.toggle('panel-open', isActive);
     }
 
-    // 목차 생성 및 기타 기능
+    /* --- 🛠 기타 보조 기능 --- */
     function generateTOC() {
         toc.innerHTML = "<h3>목차</h3><hr>";
-        document.getElementById('md-content').querySelectorAll('h1, h2, h3').forEach((h, i) => {
+        mdContent.querySelectorAll('h1, h2, h3').forEach((h, i) => {
             h.id = "h-" + i;
             const item = document.createElement('div');
             item.className = 'sidebar-item';
             item.textContent = h.textContent;
             item.onclick = () => { h.scrollIntoView({behavior:'smooth'}); closeAllPanels(); };
             toc.appendChild(item);
+        });
+    }
+
+    function renderSidebar(data) {
+        const grouped = data.reduce((acc, obj) => {
+            acc[obj.category] = acc[obj.category] || [];
+            acc[obj.category].push(obj);
+            return acc;
+        }, {});
+
+        sidebar.innerHTML = "<h3>카테고리</h3>";
+        Object.keys(grouped).forEach(cat => {
+            const group = document.createElement('div');
+            group.className = 'cat-group';
+            group.innerHTML = `<div class="cat-title" onclick="renderCategoryFiles('${cat}')">${cat} <span>➔</span></div>`;
+            sidebar.appendChild(group);
         });
     }
 
@@ -277,19 +327,20 @@
         navigator.clipboard.writeText(window.location.href).then(() => alert("링크가 복사되었습니다!"));
     }
 
-    // 검색 로직
     document.getElementById('search').oninput = (e) => {
         const k = e.target.value.toLowerCase();
-        if(!k) { renderRoot(); return; }
+        if(!k) { renderRootFolders(); return; }
         
+        breadcrumb.style.display = 'block';
+        breadcrumb.textContent = `🔍 검색 결과: "${k}"`;
         const filtered = allData.filter(i => i.title.toLowerCase().includes(k) || i.category.toLowerCase().includes(k));
-        breadcrumb.innerHTML = `🔍 검색 결과: ${k}`;
-        contentGrid.innerHTML = "";
-        filtered.forEach(file => {
+        
+        contentGrid.innerHTML = '';
+        filtered.forEach(i => {
             const card = document.createElement('div');
             card.className = 'card';
-            card.innerHTML = `<span>📄</span><div style="font-size:0.9rem">${file.title}</div>`;
-            card.onclick = () => openMarkdown(file.path);
+            card.innerHTML = `<div class="icon">📄</div><strong>${i.title}</strong><div style="font-size:0.8rem; color:var(--dim);">${i.category}</div>`;
+            card.onclick = () => openMarkdown(i.path);
             contentGrid.appendChild(card);
         });
     };
