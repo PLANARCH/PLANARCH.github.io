@@ -1,32 +1,39 @@
 const fs = require('fs');
 const path = require('path');
 
-// 현재 프로세스가 실행되는 루트 디렉토리를 기준으로 설정
-const baseDir = process.cwd(); 
+const baseDir = path.join(__dirname); // ✅ 핵심 수정
 
 let result = [];
-const categories = fs.readdirSync(baseDir);
 
-// 제외할 폴더 목록
-const exclude = ['node_modules', '.git', '.github', 'scripts', 'docs']; 
+// docs 안의 폴더 읽기
+const categories = fs.readdirSync(baseDir);
 
 categories.forEach(category => {
   const categoryPath = path.join(baseDir, category);
+
+  // 폴더만 처리
   if (!fs.statSync(categoryPath).isDirectory()) return;
-  if (category.startsWith('.') || exclude.includes(category)) return;
+
+  // 숨김 폴더 제외
+  if (category.startsWith('.')) return;
 
   const files = fs.readdirSync(categoryPath);
+
   files.forEach(file => {
     if (file.endsWith('.md')) {
       result.push({
         category,
         title: file.replace('.md', '').replace(/-/g, ' '),
-        path: `${category}/${file}`.replace(/\\/g, '/') // 윈도우 경로 호환성
+        path: `${category}/${file}`
       });
     }
   });
 });
 
-// 루트에 data.json 저장
-fs.writeFileSync(path.join(baseDir, 'data.json'), JSON.stringify(result, null, 2));
-console.log('✅ data.json 생성 완료 (Root 디렉토리)');
+// JSON 저장
+fs.writeFileSync(
+  path.join(baseDir, 'data.json'),
+  JSON.stringify(result, null, 2)
+);
+
+console.log('✅ data.json 생성 완료:', result);
