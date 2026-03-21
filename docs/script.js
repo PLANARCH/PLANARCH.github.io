@@ -21,7 +21,7 @@
     function toggleTheme() {
         const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
         document.body.className = newTheme;
-        if(!newTheme){
+        if(newTheme!='dark'){
             document.getElementById("dark_mode").innerHTML = "🌗"
         }else{
             document.getElementById("dark_mode").innerHTML = "🌓"
