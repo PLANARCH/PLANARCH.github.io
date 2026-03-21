@@ -230,7 +230,13 @@
             return `![${alt}](${fixedPath})`;
         });
     }
-    
+
+    function fixHeaderSpacing(md) {
+        // 줄 시작부분의 #...# 뒤에 공백이 없으면 공백을 추가
+        // 예: #TEST -> # TEST, ###제목 -> ### 제목
+        return md.replace(/^(#{1,6})([^#\s\d])/gm, '$1 $2');
+    }
+
     async function openMarkdown(path, pushHistory = true) {
         // 🌟 [제목 복구] 데이터에서 찾거나 파일명에서 추출
         const item = allData.find(d => d.path === path);
@@ -244,10 +250,15 @@
             let md = mdCache[path] || await fetch(`${path}?v=${VERSION}`).then(r => r.text());
             mdCache[path] = md;
 
-            // 이미지 경로 보정
-            const fixedMd = fixImagePaths(md, path);
+            // 2. 이미지 경로 보정 실행
+            let processedMd = fixImagePaths(md, path);
             
-            mdContent.innerHTML = marked.parse(fixedMd);
+            // 3. 🌟 [추가] 헤더 스페이싱 보정 실행 (#제목 -> # 제목)
+            processedMd = fixHeaderSpacing(processedMd);
+            
+            // 4. 보정된 마크다운 파싱 및 렌더링
+            mdContent.innerHTML = marked.parse(processedMd);
+            
             viewer.classList.add('active'); 
             document.body.style.overflow = 'hidden';
 
@@ -263,6 +274,7 @@
             closeAllPanels();
         } catch (e) {
             console.error("로드 에러:", e);
+            mdContent.innerHTML = "<p style='padding:20px;'>문서를 불러오는 중 오류가 발생했습니다.</p>";
         }
     }
 
