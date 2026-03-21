@@ -118,8 +118,8 @@
     function renderMarkdown(md) {
         if (!md) return "";
 
-        // 🔥 "#TEST" → "# TEST" 자동 보정
-        md = md.replace(/^#(\S)/gm, "# $1");
+        // 🔥 모든 헤더 보정 (# ~ ######)
+        md = md.replace(/^(#{1,6})(\S)/gm, "$1 $2");
 
         if (window.marked && window.marked.parse) {
             return window.marked.parse(md);
