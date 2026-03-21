@@ -72,7 +72,57 @@
             border-bottom: 1px solid var(--border); z-index: 2001;
         }
         .viewer-close { font-size: 1.8rem; cursor: pointer; line-height: 1; }
-        .markdown-body { padding: 40px 20px; max-width: 850px; margin: 0 auto; background: transparent !important; }
+        /* 📄 마크다운 뷰어 다크/라이트 모드 완벽 호환 */
+        .markdown-body { 
+            padding: 40px 20px; 
+            max-width: 850px; 
+            margin: 0 auto; 
+            background: transparent !important; 
+            color: var(--text) !important; /* 글자색 테마 연동 */
+        }
+
+        /* 제목, 본문, 리스트 색상 강제 동기화 */
+        .markdown-body h1, .markdown-body h2, .markdown-body h3, 
+        .markdown-body h4, .markdown-body h5, .markdown-body h6,
+        .markdown-body p, .markdown-body li {
+            color: var(--text) !important;
+        }
+
+        /* 밑줄 및 인용문 테두리 색상 테마 연동 */
+        .markdown-body h1, .markdown-body h2 {
+            border-bottom: 1px solid var(--border) !important;
+        }
+        .markdown-body blockquote {
+            color: var(--dim) !important;
+            border-left-color: var(--border) !important;
+        }
+
+        /* 링크 색상 */
+        .markdown-body a {
+            color: var(--primary) !important;
+        }
+
+        /* 인라인 코드 및 코드 블록 테마 연동 */
+        .markdown-body code {
+            background-color: var(--card) !important;
+            color: var(--text) !important;
+        }
+        .markdown-body pre {
+            background-color: var(--card) !important;
+            border: 1px solid var(--border) !important;
+        }
+        .markdown-body pre code {
+            background-color: transparent !important;
+        }
+
+        /* 테이블 테마 연동 */
+        .markdown-body table th, .markdown-body table td {
+            border-color: var(--border) !important;
+            background-color: transparent !important;
+        }
+        .markdown-body table tr:nth-child(2n) {
+            background-color: rgba(128, 128, 128, 0.05) !important;
+        }
         
         /* 사이드바 구성 */
         .cat-group { margin-bottom: 1rem; }
