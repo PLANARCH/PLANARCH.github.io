@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>자료 아카이브</title>
+    <!-- 테마 색상 설정 (모바일 브라우저 상단바 색상) -->
+    <meta name="theme-color" content="#0d1117">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github-dark.min.css">
     <link rel="stylesheet" href="style.css">
@@ -13,33 +15,44 @@
 
 <header>
     <div style="display: flex; align-items: center; gap: 15px;">
-        <div onclick="toggleSidebar(event)" style="cursor:pointer; font-size: 1.5rem;">☰</div>
-        <h1 style="margin:0; font-size: 1.1rem; cursor:pointer;" onclick="renderRootFolders()">📚 자료 아카이브</h1>
+        <!-- 사이드바 토글 버튼 -->
+        <div onclick="toggleSidebar(event)" style="cursor:pointer; font-size: 1.5rem; padding: 5px;">☰</div>
+        <!-- 수정: renderRootFolders() -> renderFolders("") 로 변경 (스크립트와 일치) -->
+        <h1 style="margin:0; font-size: 1.1rem; cursor:pointer;" onclick="renderFolders('')">📚 자료 아카이브</h1>
     </div>
-    <div onclick="toggleTheme()" style="cursor:pointer; font-size: 1.2rem;" id="dark_mode">🌓</div>
+    <div onclick="toggleTheme()" style="cursor:pointer; font-size: 1.2rem; padding: 5px;" id="dark_mode">🌓</div>
 </header>
 
 <main>
+    <!-- 사이드바 외부 클릭 시 닫기용 오버레이 -->
     <div class="overlay" onclick="closeAllPanels()"></div>
+    
+    <!-- 사이드바 트리 영역 -->
     <aside id="sidebar" class="panel"></aside>
 
     <section class="content">
-        <div id="breadcrumb" class="breadcrumb" style="margin-bottom:20px; color:var(--primary); cursor:pointer; display:none;" onclick="renderRootFolders()">← 홈으로</div>
+        <!-- 브레드크럼: 스크립트에서 동적으로 innerHTML을 채움 -->
+        <div id="breadcrumb" class="breadcrumb" style="margin-bottom:20px; color:var(--primary); cursor:pointer; display:none;"></div>
+        
         <div id="main-ui">
-            <input id="search" placeholder="자료 검색..." style="width:100%; padding:14px; margin-bottom:25px; border-radius:12px; border:1px solid var(--border); background:var(--card); color:var(--text); box-sizing:border-box; outline:none;" />
+            <!-- 검색창: 자동완성 끄기 추가 -->
+            <input id="search" placeholder="자료 검색..." autocomplete="off" style="width:100%; padding:14px; margin-bottom:25px; border-radius:12px; border:1px solid var(--border); background:var(--card); color:var(--text); box-sizing:border-box; outline:none;" />
             <div id="content-grid" class="cards"></div>
         </div>
     </section>
 
+    <!-- 마크다운 뷰어 레이어 -->
     <div id="viewer">
         <div class="viewer-header">
-            <div id="viewer-title" style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;"></div>
+            <div id="viewer-title" style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%;"></div>
             <div style="display:flex; gap:10px; align-items:center;">
-                <button onclick="copyLink()" style="padding:6px 12px; border-radius:6px; background:var(--primary); color:white; border:none; cursor:pointer; font-size:0.85rem;">🔗 링크 복사</button>
-                <div class="viewer-close" onclick="closeMarkdown()">×</div>
+                <!-- 링크 복사 버튼 -->
+                <button id="copy-btn" onclick="copyLink()" style="padding:6px 12px; border-radius:6px; background:var(--primary); color:white; border:none; cursor:pointer; font-size:0.85rem; transition: 0.2s;">🔗 링크 복사</button>
+                <div class="viewer-close" onclick="closeMarkdown()" style="cursor:pointer; font-size: 1.5rem; padding: 0 10px;">×</div>
             </div>
         </div>
-        <article id="md-content" class="markdown-body"></article>
+        <!-- 마크다운 렌더링 영역 -->
+        <article id="md-content" class="markdown-body" style="padding: 20px;"></article>
     </div>
 </main>
 

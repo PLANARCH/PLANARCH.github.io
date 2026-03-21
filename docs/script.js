@@ -1,258 +1,263 @@
-    let mdCache = {};          
-    let allData = [];
-    let currentCategory = null;
-    const VERSION = Date.now(); // 1. 앱 로드 시점의 타임스탬프 생성
+let mdCache = {};
+let allData = [];
+let currentPath = ""; 
+const VERSION = Date.now();
+const THEME_KEY = 'archive-theme';
 
-    const sidebar = document.getElementById('sidebar');
-    const contentGrid = document.getElementById('content-grid');
-    const breadcrumb = document.getElementById('breadcrumb');
-    const viewer = document.getElementById('viewer');
-    const mdContent = document.getElementById('md-content');
+const sidebar = document.getElementById('sidebar');
+const contentGrid = document.getElementById('content-grid');
+const breadcrumb = document.getElementById('breadcrumb');
+const viewer = document.getElementById('viewer');
+const mdContent = document.getElementById('md-content');
+const searchInput = document.getElementById('search');
 
-    const savedTheme = localStorage.getItem('archive-theme') || 'dark';
-    const THEME_KEY = 'archive-theme';
+// --- 초기화 및 테마 ---
+function applyTheme(theme) {
+    document.body.classList.remove('light', 'dark');
+    document.body.classList.add(theme);
+    const btn = document.getElementById("dark_mode");
+    if (btn) btn.textContent = theme === 'dark' ? "🌓" : "🌗";
+}
 
-    function applyTheme(theme) {
-        document.body.classList.remove('light', 'dark');
-        document.body.classList.add(theme);
+function toggleTheme() {
+    const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+    applyTheme(newTheme);
+    localStorage.setItem(THEME_KEY, newTheme);
+}
 
-        const btn = document.getElementById("dark_mode");
-        if (btn) {
-            btn.textContent = theme === 'dark' ? "🌓" : "🌗";
-        }
-    }
-
-    function initTheme() {
-        const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
-        applyTheme(savedTheme);
-    }
-
-    function toggleTheme() {
-        const isDark = document.body.classList.contains('dark');
-        const newTheme = isDark ? 'light' : 'dark';
-
-        applyTheme(newTheme);
-        localStorage.setItem(THEME_KEY, newTheme);
-    }
-    document.addEventListener("DOMContentLoaded", () => {
-        initTheme();
-    });
-    // 2. data.json 로드 시 캐시 방지
-    fetch(`data.json?v=${VERSION}`)
-    .then(r => {
-        if (!r.ok) throw new Error(`HTTP 에러! 상태코드: ${r.status}`);
-        return r.json();
-    })
+// --- 데이터 로드 ---
+fetch(`data.json?v=${VERSION}`)
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
     .then(data => {
         allData = data;
         renderSidebar(data);
-        handleInitialRoute(); 
+        handleInitialRoute();
     })
     .catch(err => {
-        document.getElementById('content-grid').innerHTML = `<div style="text-align:center; padding:50px; color:var(--dim);"><h3>데이터를 불러올 수 없습니다.</h3><p>${err.message}</p></div>`;
+        contentGrid.innerHTML = `<div style="text-align:center; padding:50px;"><h3>데이터 로드 실패</h3><p>${err}</p></div>`;
     });
 
-    async function handleInitialRoute() {
-        const params = new URLSearchParams(window.location.search);
-        const file = params.get('file');
-        const folder = params.get('folder');
+// --- 라우팅 제어 ---
+async function handleInitialRoute() {
+    const params = new URLSearchParams(window.location.search);
+    const file = params.get('file');
+    const folder = params.get('folder');
 
-        // 1. [중요] 현재 페이지(파일)의 히스토리 위치를 '홈'으로 덮어씁니다.
-        // 이제 뒤로 가기를 하면 구글로 가겠지만, 아직 스택을 더 쌓을 겁니다.
-        history.replaceState({view: 'root'}, "", window.location.pathname);
+    // 뒤로가기 시 홈으로 오게 함
+    history.replaceState({view: 'root'}, "", window.location.pathname);
 
-        if (file) {
-            const category = file.split('/')[0];
-            
-            // 2. '폴더' 상태를 히스토리에 한 층 쌓습니다.
-            // 현재 스택: [구글] -> [홈] -> [폴더]
-            history.pushState({view: 'folder', cat: category}, "", `?folder=${encodeURIComponent(category)}`);
-            
-            // 배경에 폴더 목록을 미리 그려둡니다. (파일 닫았을 때 보일 화면)
-            renderCategoryFiles(category, false, false);
-            
-            // 3. 마지막으로 '파일' 상태를 쌓습니다.
-            // 현재 스택: [구글] -> [홈] -> [폴더] -> [파일]
-            // 이제 뒤로 스와이프하면 [폴더]로 이동하게 됩니다!
-            openMarkdown(file, true); 
+    if (file) {
+        const folderPath = file.substring(0, file.lastIndexOf('/'));
+        renderFolders(folderPath, false);
+        openMarkdown(file, true);
+    } else if (folder) {
+        renderFolders(folder);
+    } else {
+        renderFolders("");
+    }
+}
 
-        } else if (folder) {
-            // 폴더로 바로 온 경우: [구글] -> [홈] -> [폴더]
-            history.pushState({view: 'folder', cat: folder}, "", `?folder=${encodeURIComponent(folder)}`);
-            renderCategoryFiles(folder, false, false);
-        } else {
-            renderRootFolders(false);
+// --- 컨텐츠 그리드 (재귀 폴더 탐색) ---
+function renderFolders(path = "", pushHistory = true) {
+    currentPath = path;
+    if (pushHistory) {
+        const url = path ? `?folder=${encodeURIComponent(path)}` : window.location.pathname;
+        history.pushState({view: 'folder', cat: path}, "", url);
+    }
+
+    // 브레드크럼 설정
+    breadcrumb.style.display = path ? 'block' : 'none';
+    breadcrumb.innerHTML = path ? `<span>← 상위 폴더로</span> <small style="opacity:0.6">(${path})</small>` : '';
+    breadcrumb.onclick = () => {
+        const parts = path.split('/');
+        parts.pop();
+        renderFolders(parts.join('/'));
+    };
+
+    contentGrid.innerHTML = '';
+
+    const subFolders = new Set();
+    const filesInCurrent = [];
+
+    allData.forEach(item => {
+        const itemPath = item.path;
+        if (path === "") {
+            // 루트 경로 처리
+            const parts = itemPath.split('/');
+            if (parts.length > 1) subFolders.add(parts[0]);
+            else filesInCurrent.push(item);
+        } else if (itemPath.startsWith(path + '/')) {
+            // 서브 폴더 처리
+            const relative = itemPath.substring(path.length + 1);
+            const parts = relative.split('/');
+            if (parts.length > 1) subFolders.add(parts[0]);
+            else filesInCurrent.push(item);
         }
-    }
+    });
 
-    function renderRootFolders(pushHistory = true) {
-        currentCategory = null;
-        if (pushHistory) history.pushState({view: 'root'}, "", window.location.pathname);
-        breadcrumb.style.display = 'none';
-        contentGrid.innerHTML = '';
-        const categories = [...new Set(allData.map(item => item.category))];
-        categories.forEach(cat => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `<div class="icon">📁</div><strong>${cat}</strong>`;
-            card.onclick = () => renderCategoryFiles(cat);
-            contentGrid.appendChild(card);
+    // 폴더 카드 렌더링
+    subFolders.forEach(folderName => {
+        const fullNextPath = path ? `${path}/${folderName}` : folderName;
+        const card = document.createElement('div');
+        card.className = 'card folder-item';
+        card.innerHTML = `<div class="icon">📁</div><strong>${folderName}</strong>`;
+        card.onclick = () => renderFolders(fullNextPath);
+        contentGrid.appendChild(card);
+    });
+
+    // 파일 카드 렌더링
+    filesInCurrent.forEach(file => {
+        const card = document.createElement('div');
+        card.className = 'card file-item';
+        card.innerHTML = `<div class="icon">📄</div><strong>${file.title}</strong>`;
+        card.onclick = () => openMarkdown(file.path);
+        contentGrid.appendChild(card);
+    });
+}
+
+// --- 사이드바 트리 구축 ---
+function renderSidebar(data) {
+    sidebar.innerHTML = "<h3 style='padding:10px 0;'>Archive Tree</h3>";
+    const tree = {};
+
+    // JSON 데이터를 중첩 객체(Tree)로 변환
+    data.forEach(item => {
+        const parts = item.path.split('/');
+        let current = tree;
+        parts.forEach((part, idx) => {
+            if (idx === parts.length - 1) current[part] = item;
+            else {
+                current[part] = current[part] || {};
+                current = current[part];
+            }
         });
-    }
+    });
 
-    async function renderCategoryFiles(cat, keepSidebar = false, pushHistory = true) {
-        currentCategory = cat;
-        if (pushHistory) history.pushState({view: 'folder', cat: cat}, "", `?folder=${encodeURIComponent(cat)}`);
-        breadcrumb.style.display = 'block';
-        breadcrumb.textContent = `← 홈으로 (${cat})`;
-        contentGrid.innerHTML = '';
-        allData.filter(i => i.category === cat).forEach(i => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `<div class="icon">📄</div><strong>${i.title}</strong>`;
-            card.onclick = () => openMarkdown(i.path);
-            contentGrid.appendChild(card);
-        });
-        if (!keepSidebar) closeAllPanels();
-    }
+    const rootUl = document.createElement('ul');
+    rootUl.className = 'tree-root';
+    buildTreeUI(tree, rootUl);
+    sidebar.appendChild(rootUl);
+}
 
-    // 3. 이미지 및 마크다운 내 리소스 캐시 방지 적용
-    function fixImagePaths(md, path) {
-        // 1. path: "TEST/react.md" -> folder: "TEST" 추출
-        const folder = path.substring(0, path.lastIndexOf('/')); 
-        
-        return md.replace(/!\[(.*?)\]\((?!http|\/)(.*?)\)/g, (match, alt, src) => {
-            // 2. folder가 있으면 "TEST/photo/photo.jpg", 없으면 그냥 "photo/photo.jpg"
-            // 쿼리 스트링(?v=...)을 붙여 캐시 방지
-            const fixedPath = folder ? `${folder}/${src}?v=${VERSION}` : `${src}?v=${VERSION}`;
+function buildTreeUI(obj, parentElement, pathAccumulator = "") {
+    Object.keys(obj).sort().forEach(key => {
+        const val = obj[key];
+        const fullPath = pathAccumulator ? `${pathAccumulator}/${key}` : key;
+        const li = document.createElement('li');
+
+        if (val.path) { // 파일
+            li.innerHTML = `<span class="tree-file">📄 ${val.title}</span>`;
+            li.onclick = (e) => { e.stopPropagation(); openMarkdown(val.path); };
+        } else { // 폴더
+            li.innerHTML = `<span class="tree-folder">📁 ${key}</span>`;
+            const subUl = document.createElement('ul');
+            subUl.style.display = 'none';
             
-            console.log("🛠️ 실제 이미지 요청 주소:", window.location.origin + "/" + fixedPath);
+            li.onclick = (e) => {
+                e.stopPropagation();
+                const isOpen = subUl.style.display === 'block';
+                subUl.style.display = isOpen ? 'none' : 'block';
+                renderFolders(fullPath); // 사이드바 클릭 시 그리드도 연동
+            };
+            
+            buildTreeUI(val, subUl, fullPath);
+            li.appendChild(subUl);
+        }
+        parentElement.appendChild(li);
+    });
+}
+
+// --- 마크다운 뷰어 ---
+async function openMarkdown(path, pushHistory = true) {
+    const item = allData.find(d => d.path === path);
+    document.getElementById('viewer-title').textContent = item ? item.title : path;
+
+    try {
+        let md = mdCache[path] || await fetch(`${path}?v=${VERSION}`).then(r => r.text());
+        mdCache[path] = md;
+
+        const folder = path.substring(0, path.lastIndexOf('/'));
+        let processedMd = md.replace(/!\[(.*?)\]\((?!http|\/)(.*?)\)/g, (m, alt, src) => {
+            const fixedPath = folder ? `${folder}/${src}?v=${VERSION}` : `${src}?v=${VERSION}`;
             return `![${alt}](${fixedPath})`;
         });
-    }
 
-    function fixHeaderSpacing(md) {
-        // 줄 시작부분의 #...# 뒤에 공백이 없으면 공백을 추가
-        // 예: #TEST -> # TEST, ###제목 -> ### 제목
-        return md.replace(/^(#{1,6})([^#\s\d])/gm, '$1 $2');
-    }
-
-    async function openMarkdown(path, pushHistory = true) {
-        // 🌟 [제목 복구] 데이터에서 찾거나 파일명에서 추출
-        const item = allData.find(d => d.path === path);
-        const title = item ? item.title : path.split('/').pop().replace('.md', '');
+        processedMd = processedMd.replace(/^(#{1,6})([^#\s\d])/gm, '$1 $2');
+        mdContent.innerHTML = marked.parse(processedMd);
         
-        const titleElement = document.getElementById('viewer-title');
-        if (titleElement) titleElement.textContent = title;
+        viewer.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        if (window.hljs) document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
 
-        try {
-            // 파일 로드 (캐시 방지 v= 포함)
-            let md = mdCache[path] || await fetch(`${path}?v=${VERSION}`).then(r => r.text());
-            mdCache[path] = md;
-
-            // 2. 이미지 경로 보정 실행
-            let processedMd = fixImagePaths(md, path);
-            
-            // 3. 🌟 [추가] 헤더 스페이싱 보정 실행 (#제목 -> # 제목)
-            processedMd = fixHeaderSpacing(processedMd);
-            
-            // 4. 보정된 마크다운 파싱 및 렌더링
-            mdContent.innerHTML = marked.parse(processedMd);
-            
-            viewer.classList.add('active'); 
-            document.body.style.overflow = 'hidden';
-
-            if (window.hljs) document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
-
-            // 히스토리 관리 (뒤로가기 제스처 대응)
-            if (pushHistory) {
-                const currentFile = new URLSearchParams(window.location.search).get('file');
-                if (currentFile !== path) {
-                    history.pushState({view: 'file', path: path}, "", `?file=${encodeURIComponent(path)}`);
-                }
-            }
-            closeAllPanels();
-        } catch (e) {
-            console.error("로드 에러:", e);
-            mdContent.innerHTML = "<p style='padding:20px;'>문서를 불러오는 중 오류가 발생했습니다.</p>";
+        if (pushHistory) {
+            history.pushState({view: 'file', path: path}, "", `?file=${encodeURIComponent(path)}`);
         }
+    } catch (e) {
+        mdContent.innerHTML = "<p>문서를 불러오지 못했습니다.</p>";
     }
+}
 
-    function closeMarkdown() {
-        if (new URLSearchParams(window.location.search).get('file')) history.back();
-        else { viewer.classList.remove('active'); document.body.style.overflow = 'auto'; }
+function closeMarkdown() {
+    if (new URLSearchParams(window.location.search).get('file')) {
+        history.back();
+    } else {
+        viewer.classList.remove('active');
+        document.body.style.overflow = 'auto';
     }
+}
 
-    function renderSidebar(data) {
-        const grouped = data.reduce((acc, obj) => {
-            acc[obj.category] = acc[obj.category] || [];
-            acc[obj.category].push(obj);
-            return acc;
-        }, {});
-        sidebar.innerHTML = "<h3 style='margin-bottom:15px;'>카테고리</h3>";
-        Object.keys(grouped).forEach(cat => {
-            const group = document.createElement('div');
-            group.className = 'cat-group';
-            const header = document.createElement('div');
-            header.className = 'cat-header';
-            header.innerHTML = `<span>📁 ${cat}</span><small>▾</small>`;
-            const list = document.createElement('div');
-            list.className = 'sub-list';
-            header.onclick = (e) => {
-                const isOpen = list.style.display === 'block';
-                list.style.display = isOpen ? 'none' : 'block';
-                header.querySelector('small').textContent = isOpen ? '▾' : '▴';
-                renderCategoryFiles(cat, true);
-            };
-            grouped[cat].forEach(file => {
-                const item = document.createElement('div');
-                item.className = 'sub-item';
-                item.textContent = `📄 ${file.title}`;
-                item.onclick = (e) => { e.stopPropagation(); openMarkdown(file.path); };
-                list.appendChild(item);
-            });
-            group.appendChild(header); group.appendChild(list); sidebar.appendChild(group);
-        });
-    }
+// --- 검색 기능 ---
+searchInput.oninput = (e) => {
+    const term = e.target.value.toLowerCase();
+    if (!term) return renderFolders(currentPath, false);
 
-    function toggleSidebar(e) { e.stopPropagation(); sidebar.classList.toggle('active'); updateOverlay(); }
-    function closeAllPanels() { sidebar.classList.remove('active'); updateOverlay(); }
-    function updateOverlay() { document.body.classList.toggle('panel-open', sidebar.classList.contains('active')); }
-    function copyLink() {
-        const btn = event.target;
+    contentGrid.innerHTML = '';
+    const filtered = allData.filter(i => 
+        i.title.toLowerCase().includes(term) || i.path.toLowerCase().includes(term)
+    );
+
+    filtered.forEach(file => {
+        const card = document.createElement('div');
+        card.className = 'card file-item';
+        card.innerHTML = `<div class="icon">📄</div><strong>${file.title}</strong><br><small>${file.path}</small>`;
+        card.onclick = () => openMarkdown(file.path);
+        contentGrid.appendChild(card);
+    });
+};
+
+// --- 유틸리티 ---
+function toggleSidebar(e) {
+    e.stopPropagation();
+    sidebar.classList.toggle('active');
+    document.querySelector('.overlay').classList.toggle('active');
+}
+
+function closeAllPanels() {
+    sidebar.classList.remove('active');
+    document.querySelector('.overlay').classList.remove('active');
+}
+
+function copyLink() {
+    const url = window.location.href;
+    const btn = document.getElementById('copy-btn');
+    navigator.clipboard.writeText(url).then(() => {
         const originalText = btn.textContent;
-        
-        navigator.clipboard.writeText(window.location.href).then(() => {
-            btn.textContent = "✅ 복사됨!";
-            btn.style.background = "#10b981"; // 초록색으로 변경
-            
-            setTimeout(() => {
-                btn.textContent = originalText;
-                btn.style.background = "var(--primary)";
-            }, 2000);
-        });
-    }
+        btn.textContent = "✅ 복사됨!";
+        btn.style.background = "#2ea44f";
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = "var(--primary)";
+        }, 2000);
+    });
+}
 
-    window.onpopstate = () => {
-        const params = new URLSearchParams(window.location.search);
-        const file = params.get('file');
-        const folder = params.get('folder');
-        if (!file) { viewer.classList.remove('active'); document.body.style.overflow = 'auto'; }
-        if (file) openMarkdown(file, false);
-        else if (folder) renderCategoryFiles(folder, false, false);
-        else renderRootFolders(false);
-    };
-    document.getElementById('search').oninput = (e) => {
-        const k = e.target.value.toLowerCase();
-        if(!k) { renderRootFolders(); return; }
-        breadcrumb.style.display = 'block';
-        breadcrumb.textContent = `🔍 검색 결과: "${k}"`;
-        contentGrid.innerHTML = '';
-        allData.filter(i => i.title.toLowerCase().includes(k) || i.category.toLowerCase().includes(k)).forEach(i => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `<div class="icon">📄</div><strong>${i.title}</strong><div style="font-size:0.75rem; color:var(--dim); margin-top:5px;">${i.category}</div>`;
-            card.onclick = () => openMarkdown(i.path);
-            contentGrid.appendChild(card);
-        });
-    };
+window.onpopstate = (e) => {
+    if (e.state?.view === 'file') openMarkdown(e.state.path, false);
+    else if (e.state?.view === 'folder') renderFolders(e.state.cat, false);
+    else renderFolders("", false);
+    
+    viewer.classList.remove('active');
+    document.body.style.overflow = 'auto';
+};
+
+applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
