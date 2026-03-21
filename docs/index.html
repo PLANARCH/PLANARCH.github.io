@@ -218,18 +218,18 @@
 
     // 3. 이미지 및 마크다운 내 리소스 캐시 방지 적용
     function fixImagePaths(md, path) {
-        // path가 "TEST/react.md"라면 "TEST"만 추출
+        // path: "TEST/react.md" -> folderPath: "TEST"
         const folderPath = path.substring(0, path.lastIndexOf('/')); 
         
         return md.replace(/!\[(.*?)\]\((?!http|\/)(.*?)\)/g, (match, alt, src) => {
-            // 최종 경로: repo/docs/TEST/photo/test.jpg?v=...
-            // 만약 path 자체에 이미 repo/docs가 포함되어 있다면 아래 prefix를 수정하세요.
-            const prefix = "repo/docs"; 
+            // 🌟 prefix를 "docs"로 수정 (현재 저장소 구조에 맞춤)
+            const prefix = "docs"; 
+            
+            // 최종 결과: docs/TEST/photo/test.jpg?v=1774...
             const fixedPath = `${prefix}/${folderPath}/${src}?v=${VERSION}`;
             return `![${alt}](${fixedPath})`;
         });
     }
-
     async function openMarkdown(path, pushHistory = true) {
         // 1. 제목 설정 (데이터에서 찾거나 파일명에서 추출)
         const item = allData.find(d => d.path === path);
