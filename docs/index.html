@@ -118,20 +118,22 @@
     function renderMarkdown(md) {
         if (!md) return "";
 
-        if (window.marked) {
-            return window.marked(md);
+        if (window.marked && window.marked.parse) {
+            return window.marked.parse(md); // 🔥 이게 정답
         }
 
         return "<pre>" + md + "</pre>";
     }
 
     // 🔥 옵션은 따로
-    if (window.marked) {
-        window.marked.setOptions({
-            breaks: true,
-            gfm: true
-        });
-    }
+    window.addEventListener("load", () => {
+        if (window.marked) {
+            window.marked.setOptions({
+                breaks: true,
+                gfm: true
+            });
+        }
+    });
 
     // 🔥 앱 코드는 밖에
     const sidebar = document.getElementById('sidebar');
