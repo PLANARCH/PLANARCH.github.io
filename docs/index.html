@@ -184,6 +184,7 @@
     function renderMarkdown(md, path) {
         if (!md) return "";
         md = md.replace(/^(#{1,6})(\S)/gm, "$1 $2"); 
+        md = resolveRelativePaths(md, path);
         return marked.parse(md);
     }
     /* 📁 1. 루트 폴더 렌더링 */
