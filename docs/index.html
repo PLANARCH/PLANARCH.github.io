@@ -38,9 +38,44 @@
 
         #viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; overflow-y: auto; visibility: hidden; opacity: 0; transform: translateY(30px); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.4s; }
         #viewer.active { visibility: visible; opacity: 1; transform: translateY(0); }
-        .viewer-header { position: sticky; top: 0; background: var(--bg); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); z-index: 2001; }
+        /* 뷰어 헤더가 항상 위에 보이도록 설정 */
+        .viewer-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 2100; /* 내용물(2000)보다 높게 */
+            display: flex;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+
+        /* 제목 텍스트 스타일 */
+        #viewer-title {
+            flex: 1; /* 닫기 버튼을 오른쪽으로 밀어냄 */
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
         .viewer-close { font-size: 1.8rem; cursor: pointer; }
-        .markdown-body { padding: 40px 20px; max-width: 850px; margin: 0 auto; background: transparent !important; color: var(--text) !important; }
+        /* 스타일 태그 내에 추가 */
+        .markdown-body {
+            padding: 20px 25px 60px 25px; /* 상 20, 좌우 25, 하 60 */
+            max-width: 900px;
+            margin: 0 auto;
+            background: transparent !important;
+            color: var(--text) !important;
+        }
+
+        /* 다크모드일 때 코드 블록 배경색 최적화 */
+        body.dark .markdown-body pre {
+            background-color: #0d1117 !important;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
     </style>
 </head>
 
@@ -121,16 +156,28 @@
         const params = new URLSearchParams(window.location.search);
         const file = params.get('file');
         const folder = params.get('folder');
+
+        // 1. 기본 배경 상태 정의 (루트)
+        // replaceState는 현재 히스토리를 덮어씁니다. (구글 바로 다음 단계를 '홈'으로 설정)
         history.replaceState({view: 'root'}, "", window.location.pathname);
 
         if (file) {
+            // "TEST/react.md"에서 "TEST" 추출
             const category = file.split('/')[0];
-            if (category) {
-                history.pushState({view: 'folder', cat: category}, "", `?folder=${encodeURIComponent(category)}`);
-                renderCategoryFiles(category, false, false);
-                openMarkdown(file, true);
-            }
+            
+            // 2. 폴더 단계를 히스토리에 한 층 쌓음 
+            // 이제 히스토리는 [구글] -> [홈] -> [폴더(?folder=TEST)] 가 됩니다.
+            history.pushState({view: 'folder', cat: category}, "", `?folder=${encodeURIComponent(category)}`);
+            
+            // 배경에 폴더 목록을 미리 렌더링
+            renderCategoryFiles(category, false, false);
+            
+            // 3. 마지막으로 파일을 엶 (pushHistory: true)
+            // 최종 히스토리: [구글] -> [홈] -> [폴더] -> [파일(?file=...)]
+            openMarkdown(file, true); 
+
         } else if (folder) {
+            // 폴더로 직접 들어온 경우: [구글] -> [홈] -> [폴더] 순서로 구성
             history.pushState({view: 'folder', cat: folder}, "", `?folder=${encodeURIComponent(folder)}`);
             renderCategoryFiles(folder, false, false);
         } else {
@@ -170,31 +217,47 @@
     }
 
     // 3. 이미지 및 마크다운 내 리소스 캐시 방지 적용
-    function fixImagePaths(md, category) {
+    function fixImagePaths(md, path) {
+        // path가 "TEST/react.md"라면 "TEST"만 추출
+        const folderPath = path.substring(0, path.lastIndexOf('/')); 
+        
         return md.replace(/!\[(.*?)\]\((?!http|\/)(.*?)\)/g, (match, alt, src) => {
-            const fixedPath = `repo/docs/${category}/${src}?v=${VERSION}`;
+            // 최종 경로: repo/docs/TEST/photo/test.jpg?v=...
+            // 만약 path 자체에 이미 repo/docs가 포함되어 있다면 아래 prefix를 수정하세요.
+            const prefix = "repo/docs"; 
+            const fixedPath = `${prefix}/${folderPath}/${src}?v=${VERSION}`;
             return `![${alt}](${fixedPath})`;
         });
     }
 
     async function openMarkdown(path, pushHistory = true) {
+        // 1. 제목 설정 (데이터에서 찾거나 파일명에서 추출)
         const item = allData.find(d => d.path === path);
-        const category = path.split('/')[0];
+        const title = item ? item.title : path.split('/').pop().replace('.md', '');
+        document.getElementById('viewer-title').textContent = title;
+
         try {
-            // 4. md 파일 로드 시 캐시 방지
             let md = mdCache[path] || await fetch(`${path}?v=${VERSION}`).then(r => r.text());
             mdCache[path] = md;
-            const fixedMd = fixImagePaths(md, category);
+
+            // 2. 경로 보정 (전체 path 전달)
+            const fixedMd = fixImagePaths(md, path);
+            
             mdContent.innerHTML = marked.parse(fixedMd);
             viewer.classList.add('active');
             document.body.style.overflow = 'hidden';
+
             if (window.hljs) document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+
             if (pushHistory) {
                 const currentFile = new URLSearchParams(window.location.search).get('file');
                 if (currentFile !== path) history.pushState({view: 'file', path: path}, "", `?file=${encodeURIComponent(path)}`);
             }
             closeAllPanels();
-        } catch (e) { console.error("로드 에러:", e); }
+        } catch (e) {
+            console.error("로드 에러:", e);
+            mdContent.innerHTML = "<p>문서를 불러오는 중 오류가 발생했습니다.</p>";
+        }
     }
 
     function closeMarkdown() {
@@ -237,7 +300,20 @@
     function toggleSidebar(e) { e.stopPropagation(); sidebar.classList.toggle('active'); updateOverlay(); }
     function closeAllPanels() { sidebar.classList.remove('active'); updateOverlay(); }
     function updateOverlay() { document.body.classList.toggle('panel-open', sidebar.classList.contains('active')); }
-    function copyLink() { navigator.clipboard.writeText(window.location.href).then(() => alert("링크 복사 완료!")); }
+    function copyLink() {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            btn.textContent = "✅ 복사됨!";
+            btn.style.background = "#10b981"; // 초록색으로 변경
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = "var(--primary)";
+            }, 2000);
+        });
+    }
 
     window.onpopstate = () => {
         const params = new URLSearchParams(window.location.search);
