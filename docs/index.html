@@ -154,18 +154,34 @@
         handleInitialRoute();
     });
 
-    function handleInitialRoute() {
+    /* --- 🔙 초기 로드 시 히스토리 스택 강제 구성 --- */
+    async function handleInitialRoute() {
         const params = new URLSearchParams(window.location.search);
         const file = params.get('file');
         const folder = params.get('folder');
+
         if (file) {
             const item = allData.find(d => d.path === file);
-            if(item) renderCategoryFiles(item.category, false, false);
-            openMarkdown(file, false);
-        } else if (folder) renderCategoryFiles(folder, false, false);
-        else renderRootFolders(false);
+            if (item) {
+                // 1. 홈 상태 주입 (뒤로가기 2번 하면 홈)
+                history.replaceState({view: 'root'}, "", window.location.pathname);
+                // 2. 폴더 상태 주입 (뒤로가기 1번 하면 폴더)
+                history.pushState({view: 'folder', cat: item.category}, "", `?folder=${encodeURIComponent(item.category)}`);
+                
+                // 화면 렌더링 (배경에 폴더 목록을 깔아둠)
+                renderCategoryFiles(item.category, false, false);
+                // 파일 열기 (히스토리 스택 추가)
+                openMarkdown(file, true); 
+            }
+        } else if (folder) {
+            history.replaceState({view: 'root'}, "", window.location.pathname);
+            history.pushState({view: 'folder', cat: folder}, "", `?folder=${encodeURIComponent(folder)}`);
+            renderCategoryFiles(folder, false, false);
+        } else {
+            renderRootFolders(false);
+        }
     }
-
+    
     function renderRootFolders(pushHistory = true) {
         currentCategory = null;
         if (pushHistory) history.pushState({view: 'root'}, "", window.location.pathname);
@@ -198,18 +214,46 @@
         if (!keepSidebar) closeAllPanels();
     }
 
+        /* --- ⚙️ 마크다운 렌더링 및 경로 보정 --- */
+    function fixImagePaths(md, category) {
+        // 이미지 태그 ![alt](src) 형태를 찾아서 경로 보정
+        // 외부 링크(http)나 절대 경로(/)가 아닌 경우에만 category 폴더를 붙여줌
+        return md.replace(/!\[(.*?)\]\((?!http|\/)(.*?)\)/g, (match, alt, src) => {
+            // 이미지 저장 규칙: /repo/docs/[카테고리]/[src]
+            const fixedPath = `repo/docs/${category}/${src}`;
+            return `![${alt}](${fixedPath})`;
+        });
+    }
+
     async function openMarkdown(path, pushHistory = true) {
-        document.getElementById('viewer-title').textContent = allData.find(d => d.path === path)?.title || "문서";
+        const item = allData.find(d => d.path === path);
+        if (!item) return;
+
+        document.getElementById('viewer-title').textContent = item.title;
+
         try {
-            const md = mdCache[path] || await fetch(path).then(r => r.text());
+            let md = mdCache[path] || await fetch(path).then(r => r.text());
             mdCache[path] = md;
-            mdContent.innerHTML = marked.parse(md);
+
+            // 🌟 [추가] 이미지 경로 보정 실행 (열린 파일의 카테고리 정보 전달)
+            const fixedMd = fixImagePaths(md, item.category);
+            
+            mdContent.innerHTML = marked.parse(fixedMd);
             viewer.classList.add('active');
             document.body.style.overflow = 'hidden';
+
             if (window.hljs) document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
-            closeAllPanels();
-            if (pushHistory) history.pushState({view: 'file', path: path}, "", `?file=${encodeURIComponent(path)}`);
-        } catch { alert("파일 로드 실패"); }
+
+            // 🌟 히스토리 관리 (뒤로가기 제스처 대응)
+            if (pushHistory) {
+                const currentFile = new URLSearchParams(window.location.search).get('file');
+                if (currentFile !== path) {
+                    history.pushState({view: 'file', path: path}, "", `?file=${encodeURIComponent(path)}`);
+                }
+            }
+        } catch (e) {
+            alert("파일 로드 실패");
+        }
     }
 
     function closeMarkdown() {
