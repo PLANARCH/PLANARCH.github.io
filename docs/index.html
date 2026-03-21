@@ -12,13 +12,12 @@
         :root { 
             --primary: #3b82f6; 
             --sidebar-width: 280px;
-            --toc-width: 260px;
         }
 
         body.dark { --bg:#0f172a; --card:#1e293b; --text:#f8fafc; --dim:#94a3b8; --border: #334155; }
         body.light { --bg:#f8fafc; --card:#fff; --text:#0f172a; --dim:#64748b; --border: #e2e8f0; }
 
-        body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); transition: background 0.3s; overflow-x: hidden; touch-action: pan-y; }
+        body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); transition: background 0.3s; overflow-x: hidden; }
 
         header {
             display:flex; justify-content:space-between; align-items: center;
@@ -26,17 +25,16 @@
             position: sticky; top: 0; background: var(--bg); z-index: 1100;
         }
 
-        /* 📁 사이드바 및 목차 패널 */
+        /* 📁 사이드바 */
         .panel {
             background: var(--bg);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: fixed; top: 60px; bottom: 0; z-index: 1500;
+            position: fixed; top: 0; bottom: 0; z-index: 1500;
             overflow-y: auto; box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            width: var(--sidebar-width); left: 0; transform: translateX(-100%); 
+            border-right: 1px solid var(--border); padding: 1rem;
         }
-        #sidebar { width: var(--sidebar-width); left: 0; transform: translateX(-100%); border-right: 1px solid var(--border); padding: 1rem; }
-        #toc { width: var(--toc-width); right: 0; transform: translateX(100%); border-left: 1px solid var(--border); padding: 1rem; }
-        
-        #sidebar.active, #toc.active { transform: translateX(0); }
+        #sidebar.active { transform: translateX(0); }
 
         /* 🌑 오버레이 */
         .overlay {
@@ -51,7 +49,7 @@
         .breadcrumb { margin-bottom: 20px; font-size: 0.9rem; color: var(--primary); cursor: pointer; display: none; }
         #search { width: 100%; padding: 14px; margin-bottom: 25px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); outline: none; box-sizing: border-box;}
 
-        /* 🃏 그리드 및 카드 스타일 */
+        /* 🃏 그리드 및 카드 */
         .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.2rem; }
         .card { 
             padding: 24px; background: var(--card); border-radius: 14px; cursor: pointer; 
@@ -61,72 +59,38 @@
         .card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .card .icon { font-size: 2.5rem; margin-bottom: 5px; }
 
-        /* 📄 팝업 뷰어 (z-index 팝업 형태) */
+        /* 📄 팝업 뷰어 (애니메이션 추가) */
         #viewer { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: var(--bg); z-index: 2000; display: none; overflow-y: auto;
+            background: var(--bg); z-index: 2000; 
+            display: none; /* JS에서 flex로 변경 */
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #viewer.active {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
         }
         .viewer-header {
             position: sticky; top: 0; background: var(--bg); padding: 15px 25px;
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--border); z-index: 2001;
         }
+        .viewer-body { overflow-y: auto; flex: 1; scroll-behavior: smooth; }
         .viewer-close { font-size: 1.8rem; cursor: pointer; line-height: 1; }
-        /* 📄 마크다운 뷰어 다크/라이트 모드 완벽 호환 */
+
         .markdown-body { 
-            padding: 40px 20px; 
-            max-width: 850px; 
-            margin: 0 auto; 
-            background: transparent !important; 
-            color: var(--text) !important; /* 글자색 테마 연동 */
+            padding: 40px 20px; max-width: 850px; margin: 0 auto; 
+            background: transparent !important; color: var(--text) !important;
         }
+        /* 마크다운 내부 요소 색상 유지 */
+        .markdown-body h1, .markdown-body h2, .markdown-body p, .markdown-body li { color: var(--text) !important; border-bottom-color: var(--border) !important;}
 
-        /* 제목, 본문, 리스트 색상 강제 동기화 */
-        .markdown-body h1, .markdown-body h2, .markdown-body h3, 
-        .markdown-body h4, .markdown-body h5, .markdown-body h6,
-        .markdown-body p, .markdown-body li {
-            color: var(--text) !important;
-        }
-
-        /* 밑줄 및 인용문 테두리 색상 테마 연동 */
-        .markdown-body h1, .markdown-body h2 {
-            border-bottom: 1px solid var(--border) !important;
-        }
-        .markdown-body blockquote {
-            color: var(--dim) !important;
-            border-left-color: var(--border) !important;
-        }
-
-        /* 링크 색상 */
-        .markdown-body a {
-            color: var(--primary) !important;
-        }
-
-        /* 인라인 코드 및 코드 블록 테마 연동 */
-        .markdown-body code {
-            background-color: var(--card) !important;
-            color: var(--text) !important;
-        }
-        .markdown-body pre {
-            background-color: var(--card) !important;
-            border: 1px solid var(--border) !important;
-        }
-        .markdown-body pre code {
-            background-color: transparent !important;
-        }
-
-        /* 테이블 테마 연동 */
-        .markdown-body table th, .markdown-body table td {
-            border-color: var(--border) !important;
-            background-color: transparent !important;
-        }
-        .markdown-body table tr:nth-child(2n) {
-            background-color: rgba(128, 128, 128, 0.05) !important;
-        }
-        
-        /* 사이드바 구성 */
         .cat-group { margin-bottom: 1rem; }
-        .cat-title { cursor: pointer; font-weight: bold; padding: 10px; border-radius: 8px; background: rgba(128,128,128,0.1); margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .cat-title { cursor: pointer; font-weight: bold; padding: 10px; border-radius: 8px; background: rgba(128,128,128,0.1); display: flex; justify-content: space-between; }
         .sidebar-item { padding: 8px 12px; cursor: pointer; font-size: 0.9rem; color: var(--dim); border-radius: 6px; }
         .sidebar-item:hover { color: var(--primary); background: rgba(59, 130, 246, 0.1); }
 
@@ -142,15 +106,11 @@
         <div onclick="toggleSidebar(event)" style="cursor:pointer; font-size: 1.5rem;">☰</div>
         <h1 style="margin:0; font-size: 1.1rem; cursor:pointer;" onclick="renderRootFolders()">📚 자료 아카이브</h1>
     </div>
-    <div style="display: flex; align-items: center; gap: 15px;">
-        <div id="toc-toggle-btn" onclick="toggleTOC(event)" style="cursor:pointer; display:none; color:var(--primary); font-weight:bold;">목차</div>
-        <div onclick="toggleTheme()" style="cursor:pointer; font-size: 1.2rem;">🌓</div>
-    </div>
+    <div onclick="toggleTheme()" style="cursor:pointer; font-size: 1.2rem;">🌓</div>
 </header>
 
 <main>
     <div class="overlay" onclick="closeAllPanels()"></div>
-
     <aside id="sidebar" class="panel"></aside>
 
     <section class="content">
@@ -163,16 +123,16 @@
 
     <div id="viewer">
         <div class="viewer-header">
-            <div id="viewer-title" style="font-weight: bold; font-size: 1.1rem;"></div>
+            <div id="viewer-title" style="font-weight: bold; font-size: 1.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%;"></div>
             <div class="btn-row">
-                <button class="btn" onclick="copyLink()" style="background:var(--primary); color:white; border:none;">🔗 링크 복사</button>
+                <button class="btn" onclick="copyLink()" style="background:var(--primary); color:white; border:none;">🔗 공유</button>
                 <div class="viewer-close" onclick="closeMarkdown()">×</div>
             </div>
         </div>
-        <article id="md-content" class="markdown-body"></article>
+        <div class="viewer-body">
+            <article id="md-content" class="markdown-body"></article>
+        </div>
     </div>
-
-    <aside id="toc" class="panel"></aside>
 </main>
 
 <script src="https://unpkg.com/marked@12.0.2/marked.min.js"></script>
@@ -180,138 +140,46 @@
 
 <script>
     let mdCache = {};          
-    let embeddings = {};       
-    let folderEmbeddings = {}; 
-    let dragged = null;
+    let allData = [];
+    let currentCategory = null;
 
-    document.addEventListener('dragstart', e => {
-        if (e.target.classList.contains('card')) dragged = e.target;
-    });
-    document.addEventListener('dragover', e => e.preventDefault());
-    document.addEventListener('drop', e => {
-        if (!dragged) return;
-        const target = e.target.closest('.card');
-        if (!target) return;
-        console.log("드롭됨:", dragged, "→", target);
-        dragged = null;
-    });
-
-    /* --- ⚙️ 마크다운 처리 엔진 --- */
-    const renderer = new marked.Renderer();
-    renderer.code = (code, lang) => {
-        if (window.hljs) {
-            const validLang = hljs.getLanguage(lang) ? lang : 'plaintext';
-            const highlighted = hljs.highlight(code, { language: validLang }).value;
-            return `<pre><code class="hljs ${validLang}">${highlighted}</code></pre>`;
-        }
-        return `<pre><code>${code}</code></pre>`;
-    };
-    renderer.link = (href, title, text) => {
-        const safeHref = href.startsWith('javascript:') ? '#' : href;
-        return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${text}</a>`;
-    };
-    renderer.image = (href, title, text) => {
-        return `<img src="${href}" alt="${text}" loading="lazy" style="max-width:100%; border-radius:10px;">`;
-    };
-    marked.use({ renderer });
-
-    function resolveRelativePaths(md, basePath) {
-        if (!basePath) return md;
-        const baseDir = basePath.substring(0, basePath.lastIndexOf('/') + 1);
-        md = md.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, src) => {
-            if (src.startsWith('http') || src.startsWith('/') || src.startsWith(baseDir)) return match;
-            return `![${alt}](${baseDir}${src})`;
-        });
-        md = md.replace(/\[(.*?)\]\((.*?)\)/g, (match, text, href) => {
-            if (href.startsWith('http') || href.startsWith('/') || href.startsWith(baseDir)) return match;
-            return `[${text}](${baseDir}${href})`;
-        });
-        return md;
-    }
-
-    function renderMarkdown(md, path) {
-        if (!md) return "";
-        md = md.replace(/^(#{1,6})(\S)/gm, "$1 $2"); 
-        md = resolveRelativePaths(md, path);
-        return marked.parse(md);
-    }
+    // 캐시 방지용 타임스탬프 생성 함수
+    const getVersion = () => `?v=${new Date().getTime()}`;
 
     /* --- 🚀 앱 코어 로직 --- */
     const sidebar = document.getElementById('sidebar');
-    const toc = document.getElementById('toc');
     const contentGrid = document.getElementById('content-grid');
     const breadcrumb = document.getElementById('breadcrumb');
     const viewer = document.getElementById('viewer');
     const mdContent = document.getElementById('md-content');
-    const tocBtn = document.getElementById('toc-toggle-btn');
-    
-    let allData = [];
-    let currentCategory = null;
 
     // 데이터 로드
-    const DATA_PATH = 'data.json'; 
-    fetch(DATA_PATH)
-        .then(r => {
-            if (!r.ok) throw new Error(`HTTP 에러! 상태코드: ${r.status}`);
-            return r.json();
-        })
+    fetch('data.json' + getVersion())
+        .then(r => r.json())
         .then(data => {
             allData = data;
             renderSidebar(data);
-            
-            // 🌟 초기 URL 상태에 따른 화면 렌더링 (History 연동)
-            const params = new URLSearchParams(window.location.search);
-            const file = params.get('file');
-            const folder = params.get('folder');
-            
-            if (file) {
-                // 뒷배경에 폴더 렌더링 후 파일 팝업 오픈
-                const item = allData.find(d => d.path === file);
-                if(item) renderCategoryFiles(item.category, false, false);
-                openMarkdown(file, false);
-            } else if (folder) {
-                renderCategoryFiles(folder, false, false);
-            } else {
-                renderRootFolders(false);
-            }
+            handleInitialRoute();
         })
         .catch(err => {
-            document.getElementById('content-grid').innerHTML = `
-                <div style="text-align:center; padding:50px; color:var(--dim);">
-                    <h3>데이터를 불러올 수 없습니다.</h3><p>${err.message}</p>
-                </div>`;
+            contentGrid.innerHTML = `<p style="text-align:center; color:var(--dim);">데이터 로드 실패</p>`;
         });
 
-    const savedTheme = localStorage.getItem('theme');
-    if(savedTheme === 'light') {
-        document.body.classList.remove('dark');
-        document.body.classList.add('light');
-    } else {
-        document.body.classList.remove('light');
-        document.body.classList.add('dark');
-    }
-
-    function generateEmbedding(path, text) {
-        const words = text.toLowerCase().split(/\W+/);
-        const vec = {};
-        words.forEach(w => { if(w) vec[w] = (vec[w] || 0) + 1; });
-        embeddings[path] = vec;
-    }
-
-    async function fetchMarkdown(path) {
-        if (mdCache[path]) return mdCache[path];
-        const md = await fetch(path).then(r => {
-            if (!r.ok) throw new Error();
-            return r.text();
-        });
-        mdCache[path] = md;
-        generateEmbedding(path, md);
-        return md;
-    }
-
-    async function getPreview(path) {
-        const md = await fetchMarkdown(path);
-        return md.replace(/[#>*`]/g, '').slice(0, 80);
+    // 초기 라우팅 처리
+    function handleInitialRoute() {
+        const params = new URLSearchParams(window.location.search);
+        const file = params.get('file');
+        const folder = params.get('folder');
+        
+        if (file) {
+            const item = allData.find(d => d.path === file);
+            if(item) renderCategoryFiles(item.category, false, false);
+            openMarkdown(file, false);
+        } else if (folder) {
+            renderCategoryFiles(folder, false, false);
+        } else {
+            renderRootFolders(false);
+        }
     }
 
     /* 📁 1. 루트 폴더 렌더링 */
@@ -325,9 +193,8 @@
         
         categories.forEach(cat => {
             const card = document.createElement('div');
-            card.draggable = true;
             card.className = 'card';
-            card.innerHTML = `<div class="icon">📁</div><strong>${cat}</strong><div style="font-size:0.8rem; color:var(--dim);">폴더 열기</div>`;
+            card.innerHTML = `<div class="icon">📁</div><strong>${cat}</strong>`;
             card.onclick = () => renderCategoryFiles(cat);
             contentGrid.appendChild(card);
         });
@@ -339,125 +206,71 @@
         if (pushHistory) history.pushState({view: 'folder', cat: cat}, "", `?folder=${encodeURIComponent(cat)}`);
         
         breadcrumb.style.display = 'block';
-        breadcrumb.textContent = `← 홈으로 (${cat} 폴더 내 자료)`;
-        breadcrumb.onclick = () => renderRootFolders(); // 브레드크럼 클릭 시 루트로 이동 (History 쌓기)
+        breadcrumb.textContent = `← 홈으로 (${cat})`;
         contentGrid.innerHTML = '';
 
         const files = allData.filter(item => item.category === cat);
-        for (const i of files) {
+        files.forEach(i => {
             const card = document.createElement('div');
             card.className = 'card';
-            const preview = await getPreview(i.path);
-            card.innerHTML = `<div class="icon">📄</div><strong>${i.title}</strong><div style="font-size:0.8rem; color:var(--dim);">${preview}</div>`;
+            card.innerHTML = `<div class="icon">📄</div><strong>${i.title}</strong>`;
             card.onclick = () => openMarkdown(i.path);
             contentGrid.appendChild(card);
-        }
+        });
 
         if (!keepSidebar) closeAllPanels();
     }
 
-    /* 📄 3. 뷰어 열기 및 닫기 */
+    /* 📄 3. 뷰어 열기 및 닫기 (애니메이션 반영) */
     async function openMarkdown(path, pushHistory = true) {
         const item = allData.find(d => d.path === path);
         document.getElementById('viewer-title').textContent = item ? item.title : "문서 보기";
 
         try {
-            const md = await fetchMarkdown(path);
-            viewer.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            tocBtn.style.display = 'block';
-            mdContent.innerHTML = renderMarkdown(md, path);
-
+            // 캐시 방지 타임스탬프 적용
+            const response = await fetch(path + getVersion());
+            const md = await response.text();
+            
+            mdContent.innerHTML = marked.parse(md);
             if (window.hljs) document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
             
-            generateTOC();
-            closeAllPanels();
+            // 애니메이션과 함께 열기
+            viewer.style.display = 'flex';
+            setTimeout(() => viewer.classList.add('active'), 10);
+            document.body.style.overflow = 'hidden';
             
             if (pushHistory) history.pushState({view: 'file', path: path}, "", `?file=${encodeURIComponent(path)}`);
+            closeAllPanels();
         } catch {
-            alert("파일을 로드할 수 없습니다.");
+            alert("파일을 불러올 수 없습니다.");
         }
     }
 
     function closeMarkdown() {
-        // X 버튼 클릭 시 시스템 뒤로가기와 동일한 효과
-        if (window.history.length > 1) {
+        // 뒤로가기 제스처와 동일하게 동작하도록 history.back() 활용
+        if (window.location.search.includes('file=')) {
             history.back();
         } else {
-            // 직링크로 들어온 경우 폴더나 루트로 이동 처리
-            viewer.style.display = 'none';
+            // 예외 상황 시 직접 닫기
+            viewer.classList.remove('active');
+            setTimeout(() => viewer.style.display = 'none', 300);
             document.body.style.overflow = 'auto';
-            tocBtn.style.display = 'none';
-            if (currentCategory) renderCategoryFiles(currentCategory);
-            else renderRootFolders();
         }
     }
 
-    /* 📱 4. 패널 및 제어 로직 */
-    function toggleSidebar(e) {
-        if(e) e.stopPropagation();
-        const isOpen = sidebar.classList.contains('active');
-        closeAllPanels(); 
-        if (!isOpen) sidebar.classList.add('active'); 
-        updateOverlay();
-    }
-
-    function toggleTOC(e) {
-        if(e) e.stopPropagation();
-        const isOpen = toc.classList.contains('active');
-        closeAllPanels();
-        if (!isOpen) toc.classList.add('active');
-        updateOverlay();
-    }
-
-    function closeAllPanels() {
-        sidebar.classList.remove('active');
-        toc.classList.remove('active');
-        updateOverlay();
-    }
-
-    function updateOverlay() {
-        const isActive = sidebar.classList.contains('active') || toc.classList.contains('active');
-        document.body.classList.toggle('panel-open', isActive);
-    }
-
-    /* 👆 5. 스와이프 제스쳐 감지 (사이드바 열기/닫기) */
-    let touchStartX = 0;
-    document.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, {passive: true});
-
-    document.addEventListener('touchend', e => {
-        let touchEndX = e.changedTouches[0].screenX;
-        let diff = touchEndX - touchStartX;
-        
-        // 오른쪽으로 스와이프 (사이드바 열기) - 화면 왼쪽 끝(50px 이내)에서 시작 시
-        if (diff > 80 && touchStartX < 50) {
-            closeAllPanels();
-            sidebar.classList.add('active');
-            updateOverlay();
-        }
-        // 왼쪽으로 스와이프 (사이드바 닫기)
-        else if (diff < -80 && sidebar.classList.contains('active')) {
-            sidebar.classList.remove('active');
-            updateOverlay();
-        }
-    }, {passive: true});
-
-    /* 🔙 6. 기기 뒤로가기 (Popstate) 제어 */
-    window.addEventListener('popstate', () => {
+    /* 🔙 4. 브라우저 뒤로가기 완벽 대응 */
+    window.addEventListener('popstate', (event) => {
         const params = new URLSearchParams(window.location.search);
         const file = params.get('file');
         const folder = params.get('folder');
 
-        // 파일 뷰어 상태 갱신
         if (!file) {
-            viewer.style.display = 'none';
+            // 파일 정보가 없으면 뷰어 닫기 애니메이션
+            viewer.classList.remove('active');
+            setTimeout(() => viewer.style.display = 'none', 300);
             document.body.style.overflow = 'auto';
-            tocBtn.style.display = 'none';
         }
 
-        // 라우팅 (히스토리 스택을 추가하지 않도록 pushHistory = false)
         if (file) {
             openMarkdown(file, false);
         } else if (folder) {
@@ -467,17 +280,16 @@
         }
     });
 
-    /* --- 🛠 기타 보조 기능 --- */
-    function generateTOC() {
-        toc.innerHTML = "<h3>목차</h3><hr>";
-        mdContent.querySelectorAll('h1, h2, h3').forEach((h, i) => {
-            h.id = "h-" + i;
-            const item = document.createElement('div');
-            item.className = 'sidebar-item';
-            item.textContent = h.textContent;
-            item.onclick = () => { h.scrollIntoView({behavior:'smooth'}); closeAllPanels(); };
-            toc.appendChild(item);
-        });
+    /* 📱 5. UI 제어 */
+    function toggleSidebar(e) {
+        e.stopPropagation();
+        sidebar.classList.toggle('active');
+        document.body.classList.toggle('panel-open', sidebar.classList.contains('active'));
+    }
+
+    function closeAllPanels() {
+        sidebar.classList.remove('active');
+        document.body.classList.remove('panel-open');
     }
 
     function renderSidebar(data) {
@@ -487,83 +299,28 @@
             return acc;
         }, {});
 
-        sidebar.innerHTML = "<h3>카테고리</h3>";
-        
+        sidebar.innerHTML = "<h3 style='margin-top:0;'>카테고리</h3>";
         Object.keys(grouped).forEach(cat => {
             const group = document.createElement('div');
             group.className = 'cat-group';
-            
-            const title = document.createElement('div');
-            title.className = 'cat-title';
-            title.innerHTML = `<span>📁 ${cat}</span> <small>▾</small>`;
-            
-            const itemList = document.createElement('div');
-            itemList.style.display = 'none';
-            itemList.style.paddingLeft = '1.2rem';
-            itemList.style.borderLeft = '1px solid var(--border)';
-            itemList.style.marginLeft = '10px';
-
-            title.onclick = (e) => {
-                e.stopPropagation();
-                // 💡 여기서 keepSidebar 파라미터를 true로 넘겨 사이드바가 닫히지 않게 합니다.
-                renderCategoryFiles(cat, true); 
-                
-                const isHidden = itemList.style.display === 'none';
-                itemList.style.display = isHidden ? 'block' : 'none';
-                title.querySelector('small').textContent = isHidden ? '▴' : '▾';
-            };
-
-            grouped[cat].forEach(file => {
-                const item = document.createElement('div');
-                item.className = 'sidebar-item';
-                item.innerHTML = `📄 ${file.title}`;
-                item.style.fontSize = '0.85rem';
-                item.onclick = (e) => {
-                    e.stopPropagation();
-                    openMarkdown(file.path);
-                };
-                itemList.appendChild(item);
-            });
-
-            group.appendChild(title);
-            group.appendChild(itemList);
+            group.innerHTML = `<div class="cat-title"><span>📁 ${cat}</span></div>`;
+            group.onclick = () => renderCategoryFiles(cat);
             sidebar.appendChild(group);
         });
     }
 
     function toggleTheme() {
-        if(document.body.classList.contains('dark')) {
-            document.body.classList.remove('dark');
-            document.body.classList.add('light');
-            localStorage.setItem('theme', 'light'); // 저장
-        } else {
-            document.body.classList.remove('light');
-            document.body.classList.add('dark');
-            localStorage.setItem('theme', 'dark'); // 저장
-        }
+        const isDark = document.body.classList.toggle('dark');
+        document.body.classList.toggle('light', !isDark);
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
 
     function copyLink() {
         navigator.clipboard.writeText(window.location.href).then(() => alert("링크가 복사되었습니다!"));
     }
 
-    document.getElementById('search').oninput = (e) => {
-        const k = e.target.value.toLowerCase();
-        if(!k) { renderRootFolders(); return; }
-        
-        breadcrumb.style.display = 'block';
-        breadcrumb.textContent = `🔍 검색 결과: "${k}"`;
-        const filtered = allData.filter(i => i.title.toLowerCase().includes(k) || i.category.toLowerCase().includes(k));
-        
-        contentGrid.innerHTML = '';
-        filtered.forEach(i => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `<div class="icon">📄</div><strong>${i.title}</strong><div style="font-size:0.8rem; color:var(--dim);">${i.category}</div>`;
-            card.onclick = () => openMarkdown(i.path);
-            contentGrid.appendChild(card);
-        });
-    };
+    // 초기 테마 설정
+    if(localStorage.getItem('theme') === 'light') toggleTheme();
 </script>
 
 </body>
