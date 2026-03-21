@@ -118,8 +118,11 @@
     function renderMarkdown(md) {
         if (!md) return "";
 
+        // 🔥 "#TEST" → "# TEST" 자동 보정
+        md = md.replace(/^#(\S)/gm, "# $1");
+
         if (window.marked && window.marked.parse) {
-            return window.marked.parse(md); // 🔥 이게 정답
+            return window.marked.parse(md);
         }
 
         return "<pre>" + md + "</pre>";
