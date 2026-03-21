@@ -157,27 +157,27 @@
         const file = params.get('file');
         const folder = params.get('folder');
 
-        // 1. 기본 배경 상태 정의 (루트)
-        // replaceState는 현재 히스토리를 덮어씁니다. (구글 바로 다음 단계를 '홈'으로 설정)
+        // 1. [중요] 현재 페이지(파일)의 히스토리 위치를 '홈'으로 덮어씁니다.
+        // 이제 뒤로 가기를 하면 구글로 가겠지만, 아직 스택을 더 쌓을 겁니다.
         history.replaceState({view: 'root'}, "", window.location.pathname);
 
         if (file) {
-            // "TEST/react.md"에서 "TEST" 추출
             const category = file.split('/')[0];
             
-            // 2. 폴더 단계를 히스토리에 한 층 쌓음 
-            // 이제 히스토리는 [구글] -> [홈] -> [폴더(?folder=TEST)] 가 됩니다.
+            // 2. '폴더' 상태를 히스토리에 한 층 쌓습니다.
+            // 현재 스택: [구글] -> [홈] -> [폴더]
             history.pushState({view: 'folder', cat: category}, "", `?folder=${encodeURIComponent(category)}`);
             
-            // 배경에 폴더 목록을 미리 렌더링
+            // 배경에 폴더 목록을 미리 그려둡니다. (파일 닫았을 때 보일 화면)
             renderCategoryFiles(category, false, false);
             
-            // 3. 마지막으로 파일을 엶 (pushHistory: true)
-            // 최종 히스토리: [구글] -> [홈] -> [폴더] -> [파일(?file=...)]
+            // 3. 마지막으로 '파일' 상태를 쌓습니다.
+            // 현재 스택: [구글] -> [홈] -> [폴더] -> [파일]
+            // 이제 뒤로 스와이프하면 [폴더]로 이동하게 됩니다!
             openMarkdown(file, true); 
 
         } else if (folder) {
-            // 폴더로 직접 들어온 경우: [구글] -> [홈] -> [폴더] 순서로 구성
+            // 폴더로 바로 온 경우: [구글] -> [홈] -> [폴더]
             history.pushState({view: 'folder', cat: folder}, "", `?folder=${encodeURIComponent(folder)}`);
             renderCategoryFiles(folder, false, false);
         } else {
