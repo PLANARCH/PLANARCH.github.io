@@ -1,0 +1,67 @@
+        :root { --primary: #3b82f6; --sidebar-width: 280px; }
+        body.dark { --bg:#0f172a; --card:#1e293b; --text:#f8fafc; --dim:#94a3b8; --border: #334155; }
+        body.light { --bg:#f8fafc; --card:#fff; --text:#0f172a; --dim:#64748b; --border: #e2e8f0; }
+        body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); transition: background 0.3s; overflow-x: hidden; }
+        header { display:flex; justify-content:space-between; align-items: center; padding:10px 20px; border-bottom:1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 1100; }
+
+        .panel { background: var(--bg); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: fixed; top: 60px; bottom: 0; z-index: 1500; overflow-y: auto; box-shadow: 0 0 15px rgba(0,0,0,0.3); }
+        #sidebar { width: var(--sidebar-width); left: 0; transform: translateX(-100%); border-right: 1px solid var(--border); padding: 1rem; }
+        #sidebar.active { transform: translateX(0); }
+
+        .cat-group { margin-bottom: 8px; }
+        .cat-header { display: flex; justify-content: space-between; align-items: center; padding: 10px; cursor: pointer; border-radius: 8px; transition: 0.2s; font-weight: 600; background: rgba(128,128,128,0.05); }
+        .cat-header:hover { background: rgba(59, 130, 246, 0.1); }
+        .sub-list { display: none; padding-left: 15px; margin-top: 5px; border-left: 1px solid var(--border); margin-left: 10px; }
+        .sub-item { padding: 6px 10px; font-size: 0.85rem; color: var(--dim); cursor: pointer; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sub-item:hover { color: var(--primary); background: rgba(59, 130, 246, 0.05); }
+
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); z-index: 1400; display: none; backdrop-filter: blur(2px); }
+        body.panel-open .overlay { display: block; }
+
+        .content { padding: 2rem; max-width: 1000px; margin: 0 auto; min-height: 100vh; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.2rem; }
+        .card { padding: 20px; background: var(--card); border-radius: 14px; cursor: pointer; border: 1px solid var(--border); transition: 0.2s; display: flex; flex-direction: column; align-items: center; text-align: center; word-break: break-all; overflow: hidden; }
+        .card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .card strong { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; margin-top: 8px; }
+        .card .icon { font-size: 2.2rem; }
+
+        #viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; overflow-y: auto; visibility: hidden; opacity: 0; transform: translateY(30px); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.4s; }
+        #viewer.active { visibility: visible; opacity: 1; transform: translateY(0); }
+        /* 뷰어 헤더가 항상 위에 보이도록 설정 */
+        .viewer-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 2100; /* 내용물(2000)보다 높게 */
+            display: flex;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+
+        /* 제목 텍스트 스타일 */
+        #viewer-title {
+            flex: 1; /* 닫기 버튼을 오른쪽으로 밀어냄 */
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .viewer-close { font-size: 1.8rem; cursor: pointer; }
+        /* 스타일 태그 내에 추가 */
+        .markdown-body {
+            padding: 20px 25px 60px 25px; /* 상 20, 좌우 25, 하 60 */
+            max-width: 900px;
+            margin: 0 auto;
+            background: transparent !important;
+            color: var(--text) !important;
+        }
+
+        /* 다크모드일 때 코드 블록 배경색 최적화 */
+        body.dark .markdown-body pre {
+            background-color: #0d1117 !important;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
