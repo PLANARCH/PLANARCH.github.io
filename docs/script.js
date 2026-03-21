@@ -11,11 +11,21 @@
 
     const savedTheme = localStorage.getItem('archive-theme') || 'dark';
     document.body.className = savedTheme;
-
+    
+    if(savedTheme != 'dark'){
+        document.getElementById("dark_mode").innerHTML = "🌗"
+    }else{
+        document.getElementById("dark_mode").innerHTML = "🌓"
+    }
+    
     function toggleTheme() {
         const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
         document.body.className = newTheme;
-        document.getElementById("dark_mode").innerHTML = "🌗"
+        if(!newTheme){
+            document.getElementById("dark_mode").innerHTML = "🌗"
+        }else{
+            document.getElementById("dark_mode").innerHTML = "🌓"
+        }
         localStorage.setItem('archive-theme', newTheme);
     }
 
