@@ -1,0 +1,32 @@
+name: Auto Update Data JSON
+on:
+  push:
+    branches:
+      - main  # 혹은 master (본인의 기본 브랜치 이름)
+    paths:
+      - '**/*.md' # 마크다운 파일이 추가/수정될 때만 작동
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate data.json
+        run: node generate.js # 루트에 있는 generate.js 실행
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add data.json
+          git commit -m "chore: auto-update data.json [skip ci]" || echo "No changes to commit"
+          git push
