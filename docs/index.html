@@ -18,7 +18,7 @@
         body.dark { --bg:#0f172a; --card:#1e293b; --text:#f8fafc; --dim:#94a3b8; --border: #334155; }
         body.light { --bg:#f8fafc; --card:#fff; --text:#0f172a; --dim:#64748b; --border: #e2e8f0; }
 
-        body { margin:0; font-family: system-ui, -apple-system, sans-serif; background:var(--bg); color:var(--text); transition: background 0.3s; overflow-x: hidden; touch-action: pan-y; }
+        body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); transition: background 0.3s; overflow-x: hidden; touch-action: pan-y; }
 
         header {
             display:flex; justify-content:space-between; align-items: center;
@@ -26,14 +26,16 @@
             position: sticky; top: 0; background: var(--bg); z-index: 1100;
         }
 
-        /* 🔥 공통 패널 스타일 (사이드바 & 목차) */
+        /* 🔥 공통 패널 스타일 */
         .panel {
             background: var(--bg);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: fixed; top: 60px; bottom: 0; z-index: 1050;
-            overflow-y: auto; box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            overflow-y: auto; box-shadow: 0 0 15px rgba(0,0,0,0.3);
         }
+        /* 사이드바 (왼쪽) */
         #sidebar { width: var(--sidebar-width); left: 0; transform: translateX(-100%); border-right: 1px solid var(--border); padding: 1rem; }
+        /* 목차 (오른쪽) */
         #toc { width: var(--toc-width); right: 0; transform: translateX(100%); border-left: 1px solid var(--border); padding: 1rem; }
         
         #sidebar.active, #toc.active { transform: translateX(0); }
@@ -46,26 +48,25 @@
         }
         body.panel-open .overlay { display: block; }
 
-        .cat-group { margin-bottom: 1.2rem; }
-        .cat-title { cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; padding: 10px; border-radius: 8px; background: rgba(128,128,128,0.1); }
+        .cat-group { margin-bottom: 1rem; }
+        .cat-title { cursor: pointer; font-weight: bold; padding: 10px; border-radius: 8px; background: rgba(128,128,128,0.1); margin-bottom: 5px; }
         .cat-items { overflow: hidden; transition: max-height 0.3s ease; }
         .cat-items.collapsed { max-height: 0; }
-        .sidebar-item { padding: 8px 12px; cursor: pointer; font-size: 0.9rem; color: var(--dim); border-radius: 6px; margin-top: 2px; }
+        .sidebar-item { padding: 8px 12px; cursor: pointer; font-size: 0.9rem; color: var(--dim); border-radius: 6px; }
         .sidebar-item:hover { color: var(--primary); background: rgba(59, 130, 246, 0.1); }
 
         .content { padding: 2rem; max-width: 900px; margin: 0 auto; min-height: 100vh; }
-        #search { width: 100%; padding: 14px; margin-bottom: 25px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); outline:none; }
+        #search { width: 100%; padding: 14px; margin-bottom: 25px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); outline: none; }
 
         .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.2rem; }
         .card { padding: 24px; background: var(--card); border-radius: 14px; cursor: pointer; border: 1px solid var(--border); transition: 0.2s; }
         .card:hover { border-color: var(--primary); transform: translateY(-3px); }
 
         #viewer { display: none; }
-        .markdown-body { padding: 20px; background: transparent !important; color: inherit !important; }
+        .markdown-body { padding: 20px; background: transparent !important; color: inherit !important; min-height: 400px; }
         
         .btn-row { display: flex; gap: 10px; margin-bottom: 20px; }
-        .btn { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; font-size: 0.9rem; }
-        .btn-primary { background: var(--primary); color: white; border: none; }
+        .btn { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; }
     </style>
 </head>
 
@@ -83,20 +84,20 @@
 </header>
 
 <main class="layout">
-    <div class="overlay" id="main-overlay" onclick="closeAllPanels()"></div>
+    <div class="overlay" onclick="closeAllPanels()"></div>
 
     <aside id="sidebar" class="panel"></aside>
 
-    <section class="content" id="main-content">
+    <section class="content">
         <div id="main-ui">
-            <input id="search" placeholder="제목이나 태그로 검색..." />
+            <input id="search" placeholder="자료 검색..." />
             <div id="content-grid" class="cards"></div>
         </div>
 
         <div id="viewer">
             <div class="btn-row">
                 <button class="btn" onclick="closeMarkdown()">← 목록</button>
-                <button class="btn btn-primary" onclick="copyLink()">🔗 링크 복사</button>
+                <button class="btn" onclick="copyLink()" style="background:var(--primary); color:white; border:none;">🔗 링크 복사</button>
             </div>
             <article id="md-content" class="markdown-body"></article>
         </div>
@@ -105,81 +106,59 @@
     <aside id="toc" class="panel"></aside>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common.min.js"></script>
 
 <script>
-    /* 🛠 [핵심] 강화된 마크다운 파서 - 외부 라이브러리 없이도 # 인식 */
-    function robustMarked(md) {
+    /* 🛠 마크다운 렌더러 (라이브러리 미작동 시 대비한 자체 파서 포함) */
+    function renderMarkdown(md) {
         if (!md) return "";
-        let lines = md.split('\n');
-        let html = "";
-        let inList = false;
-        let inCodeBlock = false;
-
-        lines.forEach(line => {
-            // 코드 블록 처리
-            if (line.trim().startsWith('```')) {
-                inCodeBlock = !inCodeBlock;
-                html += inCodeBlock ? '<pre><code class="hljs">' : '</code></pre>';
-                return;
+        try {
+            // 라이브러리가 로드되었다면 사용
+            if (typeof marked !== 'undefined') {
+                return marked.parse(md);
             }
-            if (inCodeBlock) {
-                html += line + '\n';
-                return;
-            }
+        } catch (e) { console.error("Marked error:", e); }
 
-            // 헤더 처리 (확실하게 인식하도록 정규식 보강)
-            if (line.startsWith('### ')) { html += `<h3>${line.substring(4)}</h3>`; return; }
-            if (line.startsWith('## ')) { html += `<h2>${line.substring(3)}</h2>`; return; }
-            if (line.startsWith('# ')) { html += `<h1>${line.substring(2)}</h1>`; return; }
-
-            // 리스트 처리
-            if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
-                if (!inList) { html += '<ul>'; inList = true; }
-                html += `<li>${line.trim().substring(2)}</li>`;
-                return;
-            } else if (inList) {
-                html += '</ul>';
-                inList = false;
-            }
-
-            // 일반 텍스트 및 인라인 요소
-            let processedLine = line
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/`(.*?)`/g, '<code>$1</code>');
-
-            if (processedLine.trim() === "") {
-                html += '<br>';
-            } else {
-                html += `<p>${processedLine}</p>`;
-            }
-        });
-        return html;
+        // 자체 파서 (최소한의 제목, 리스트, 볼드라도 표시하도록 함)
+        return md.replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                 .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                 .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                 .replace(/^\- (.*$)/gim, '<li>$1</li>')
+                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                 .replace(/\n/g, '<br>');
     }
 
     const sidebar = document.getElementById('sidebar');
     const toc = document.getElementById('toc');
-    const grid = document.getElementById('content-grid');
-    const mainUi = document.getElementById('main-ui');
-    const viewer = document.getElementById('viewer');
     const mdContent = document.getElementById('md-content');
-    const tocToggleBtn = document.getElementById('toc-toggle-btn');
-
+    const tocBtn = document.getElementById('toc-toggle-btn');
     let allData = [];
 
+    // 데이터 불러오기
     fetch('data.json').then(r => r.json()).then(data => {
         allData = data;
         renderSidebar(data);
         renderGrid(data);
-        // 초기 접속 시 파일 파라미터 확인
-        const p = new URLSearchParams(window.location.search).get('file');
-        if(p) openMarkdown(p);
+        const file = new URLSearchParams(window.location.search).get('file');
+        if(file) openMarkdown(file);
     });
 
-    // 📱 패널 제어
-    function toggleSidebar(e) { if(e) e.stopPropagation(); sidebar.classList.toggle('active'); updateOverlay(); }
-    function toggleTOC(e) { if(e) e.stopPropagation(); toc.classList.toggle('active'); updateOverlay(); }
-    
+    /* 📱 패널 제어 (상호 배타적) */
+    function toggleSidebar(e) {
+        if(e) e.stopPropagation();
+        toc.classList.remove('active'); // 목차 닫기
+        sidebar.classList.toggle('active');
+        updateOverlay();
+    }
+
+    function toggleTOC(e) {
+        if(e) e.stopPropagation();
+        sidebar.classList.remove('active'); // 사이드바 닫기
+        toc.classList.toggle('active');
+        updateOverlay();
+    }
+
     function closeAllPanels() {
         sidebar.classList.remove('active');
         toc.classList.remove('active');
@@ -187,11 +166,10 @@
     }
 
     function updateOverlay() {
-        const isOpen = sidebar.classList.contains('active') || toc.classList.contains('active');
-        document.body.classList.toggle('panel-open', isOpen);
+        document.body.classList.toggle('panel-open', sidebar.classList.contains('active') || toc.classList.contains('active'));
     }
 
-    // 📱 스와이프 (사이드바 & 목차 통합)
+    /* 📱 스와이프 로직 (요청하신 방향 반영) */
     let startX = 0;
     window.addEventListener('touchstart', e => startX = e.changedTouches[0].screenX, {passive: true});
     window.addEventListener('touchend', e => {
@@ -199,49 +177,53 @@
         const diff = endX - startX;
         const width = window.innerWidth;
 
-        if (Math.abs(diff) < 80) return; // 짧은 움직임 무시
+        if (Math.abs(diff) < 70) return; // 미세한 움직임 무시
 
-        if (diff > 0) { // 오른쪽으로 밀기
-            if (startX < width * 0.2) { if(!sidebar.classList.contains('active')) toggleSidebar(); } // 사이드바 열기
-            if (toc.classList.contains('active')) toggleTOC(); // 목차 닫기
-        } else { // 왼쪽으로 밀기
-            if (startX > width * 0.8) { if(!toc.classList.contains('active')) toggleTOC(); } // 목차 열기
-            if (sidebar.classList.contains('active')) toggleSidebar(); // 사이드바 닫기
+        if (diff > 70) { 
+            // ➡️ 오른쪽으로 스와이프
+            if (startX < width * 0.3) toggleSidebar(null); // 왼쪽 끝에서 밀면 사이드바 열기
+            if (toc.classList.contains('active')) closeAllPanels(); // 목차 열려있으면 닫기
+        } else if (diff < -70) { 
+            // ⬅️ 왼쪽으로 스와이프
+            if (startX > width * 0.7) toggleTOC(null); // 오른쪽 끝에서 밀면 목차 열기
+            if (sidebar.classList.contains('active')) closeAllPanels(); // 사이드바 열려있으면 닫기
         }
     }, {passive: true});
 
-    // 📄 마크다운 열기
+    /* 📄 자료 열기 */
     function openMarkdown(path) {
-        fetch(path).then(r => r.text()).then(md => {
-            mainUi.style.display = 'none';
-            viewer.style.display = 'block';
-            tocToggleBtn.style.display = 'block';
+        fetch(path).then(r => {
+            if(!r.ok) throw new Error();
+            return r.text();
+        }).then(md => {
+            document.getElementById('main-ui').style.display = 'none';
+            document.getElementById('viewer').style.display = 'block';
+            tocBtn.style.display = 'block';
             
-            // 파서 호출
-            mdContent.innerHTML = robustMarked(md);
-            
-            // 코드 하이라이트
+            mdContent.innerHTML = renderMarkdown(md);
             document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
             
             generateTOC();
             closeAllPanels();
             history.pushState(null, "", `?file=${path}`);
             window.scrollTo(0,0);
+        }).catch(() => {
+            alert("파일을 찾을 수 없습니다: " + path);
         });
     }
 
     function closeMarkdown() {
-        mainUi.style.display = 'block';
-        viewer.style.display = 'none';
-        tocToggleBtn.style.display = 'none';
+        document.getElementById('main-ui').style.display = 'block';
+        document.getElementById('viewer').style.display = 'none';
+        tocBtn.style.display = 'none';
         closeAllPanels();
         history.pushState(null, "", window.location.pathname);
     }
 
     function generateTOC() {
         toc.innerHTML = "<h3>목차</h3><hr>";
-        mdContent.querySelectorAll('h1, h2, h3').forEach((h, idx) => {
-            h.id = "h-" + idx;
+        mdContent.querySelectorAll('h1, h2, h3').forEach((h, i) => {
+            h.id = "h-" + i;
             const item = document.createElement('div');
             item.className = 'sidebar-item';
             item.textContent = h.textContent;
@@ -256,12 +238,11 @@
             acc[obj.category].push(obj);
             return acc;
         }, {});
-
-        sidebar.innerHTML = '<h3>카테고리</h3>';
+        sidebar.innerHTML = "<h3>카테고리</h3>";
         Object.keys(grouped).forEach(cat => {
-            const div = document.createElement('div');
-            div.className = 'cat-group';
-            div.innerHTML = `<div class="cat-title" onclick="this.nextSibling.classList.toggle('collapsed')">${cat} ▾</div>`;
+            const group = document.createElement('div');
+            group.className = 'cat-group';
+            group.innerHTML = `<div class="cat-title" onclick="this.nextSibling.classList.toggle('collapsed')">${cat} ▾</div>`;
             const items = document.createElement('div');
             items.className = 'cat-items';
             grouped[cat].forEach(i => {
@@ -271,30 +252,31 @@
                 item.onclick = () => openMarkdown(i.path);
                 items.appendChild(item);
             });
-            div.appendChild(items);
-            sidebar.appendChild(div);
+            group.appendChild(items);
+            sidebar.appendChild(group);
         });
     }
 
     function renderGrid(data) {
+        const grid = document.getElementById('content-grid');
         grid.innerHTML = '';
         data.forEach(i => {
-            const c = document.createElement('div');
-            c.className = 'card';
-            c.innerHTML = `<strong>${i.title}</strong><div style="font-size:0.8rem; color:var(--dim); margin-top:8px;">${i.category}</div>`;
-            c.onclick = () => openMarkdown(i.path);
-            grid.appendChild(c);
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `<strong>${i.title}</strong><div style="font-size:0.8rem; color:var(--dim); margin-top:8px;">${i.category}</div>`;
+            card.onclick = () => openMarkdown(i.path);
+            grid.appendChild(card);
         });
     }
 
     function copyLink() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            alert("공유 링크가 복사되었습니다!");
-        });
+        navigator.clipboard.writeText(window.location.href).then(() => alert("링크가 복사되었습니다!"));
     }
 
-    function toggleTheme() { document.body.classList.toggle('dark'); document.body.classList.toggle('light'); }
+    function toggleTheme() {
+        document.body.classList.toggle('dark');
+        document.body.classList.toggle('light');
+    }
 
     document.getElementById('search').oninput = (e) => {
         const k = e.target.value.toLowerCase();
