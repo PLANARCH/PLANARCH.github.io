@@ -129,6 +129,32 @@
 <script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common.min.js"></script>
 
 <script>
+    let mdCache = {};          // markdown 캐싱
+    let embeddings = {};       // 파일 embedding
+    let folderEmbeddings = {}; // 폴더 embedding
+    let dragged = null;
+
+    document.addEventListener('dragstart', e => {
+    if (e.target.classList.contains('card')) {
+        dragged = e.target;
+    }
+    });
+
+    document.addEventListener('dragover', e => {
+        e.preventDefault();
+    });
+
+    document.addEventListener('drop', e => {
+        if (!dragged) return;
+
+        const target = e.target.closest('.card');
+        if (!target) return;
+
+        console.log("드롭됨:", dragged, "→", target);
+
+        dragged = null;
+    });
+
     /* --- ⚙️ 마크다운 처리 엔진 (기존 로직 유지) --- */
     const renderer = new marked.Renderer();
     renderer.code = (code, lang) => {
@@ -183,16 +209,86 @@
     let currentCategory = null;
 
     // 데이터 로드
-    fetch('data.json').then(r => r.json()).then(data => {
-        allData = data;
-        renderSidebar(data);
-        renderRootFolders();
-        
-        // URL 파라미터 체크 (공유 링크 대응)
-        const file = new URLSearchParams(window.location.search).get('file');
-        if(file) openMarkdown(file);
-    }).catch(err => console.error("Data Load Error:", err));
+    const DATA_PATH = 'data.json'; // 💡 만약 docs 폴더 안에 생성된다면 'docs/data.json'으로 수정
+    fetch(DATA_PATH)
+        .then(r => {
+            if (!r.ok) throw new Error(`HTTP 에러! 상태코드: ${r.status} (경로: ${DATA_PATH})`);
+            return r.json();
+        })
+        .then(data => {
+            console.log("데이터 로드 성공:", data);
+            allData = data;
+            renderSidebar(data);
+            renderRootFolders();
+            
+            const file = new URLSearchParams(window.location.search).get('file');
+            if(file) openMarkdown(file);
+        })
+        .catch(err => {
+            console.error("Data Load Error:", err);
+            // 🚨 화면에 에러 표시 (이게 뜨면 경로가 틀린 것입니다)
+            document.getElementById('content-grid').innerHTML = `
+                <div style="text-align:center; padding:50px; color:var(--dim);">
+                    <h3>데이터를 불러올 수 없습니다.</h3>
+                    <p>${err.message}</p>
+                    <p>GitHub 레포지토리에 <b>data.json</b> 파일이 실제로 존재하는지 확인하세요.</p>
+                </div>
+            `;
+        });
 
+    function searchRAG(query) {
+        const q = query.toLowerCase().split(/\W+/);
+        const scores = [];
+
+        Object.entries(embeddings).forEach(([path, vec]) => {
+            let score = 0;
+            q.forEach(w => {
+                if (vec[w]) score += vec[w];
+            });
+            if (score > 0) scores.push({ path, score });
+        });
+
+        return scores.sort((a,b)=>b.score-a.score).slice(0,10);
+    }
+
+    function generateEmbedding(path, text) {
+        const words = text.toLowerCase().split(/\W+/);
+        const vec = {};
+
+        words.forEach(w => {
+            if (!w) return;
+            vec[w] = (vec[w] || 0) + 1;
+        });
+
+        embeddings[path] = vec;
+
+        // 🔥 폴더 단위 embedding
+        const item = allData.find(d => d.path === path);
+        if (!item) return;
+
+        const cat = item.category;
+        folderEmbeddings[cat] = folderEmbeddings[cat] || {};
+
+        Object.keys(vec).forEach(k => {
+            folderEmbeddings[cat][k] = (folderEmbeddings[cat][k] || 0) + vec[k];
+        });
+    }
+
+    async function fetchMarkdown(path) {
+        if (mdCache[path]) return mdCache[path];
+
+        const md = await fetch(path).then(r => {
+            if (!r.ok) throw new Error();
+            return r.text();
+        });
+
+        mdCache[path] = md;
+
+        // 🔥 RAG embedding 생성
+        generateEmbedding(path, md);
+
+        return md;
+    }
     /* 📁 1. 폴더가 root 취급받는 UI 렌더링 */
     function renderRootFolders() {
         currentCategory = null;
@@ -204,6 +300,7 @@
         
         categories.forEach(cat => {
             const card = document.createElement('div');
+            card.draggable = true;
             card.className = 'card';
             card.innerHTML = `<div class="icon">📁</div><strong>${cat}</strong><div style="font-size:0.8rem; color:var(--dim);">폴더 열기</div>`;
             card.onclick = () => renderCategoryFiles(cat);
@@ -212,46 +309,64 @@
     }
 
     /* 📂 2. 특정 카테고리 진입 시 파일 목록 렌더링 */
-    function renderCategoryFiles(cat) {
+    async function renderCategoryFiles(cat) {
         currentCategory = cat;
         breadcrumb.style.display = 'block';
         breadcrumb.textContent = `← 홈으로 (${cat} 폴더 내 자료)`;
         contentGrid.innerHTML = '';
 
         const files = allData.filter(item => item.category === cat);
-        files.forEach(i => {
+
+        for (const i of files) {
             const card = document.createElement('div');
             card.className = 'card';
-            card.innerHTML = `<div class="icon">📄</div><strong>${i.title}</strong><div style="font-size:0.8rem; color:var(--dim);">${i.category}</div>`;
+
+            const preview = await getPreview(i.path);
+
+            card.innerHTML = `
+                <div class="icon">📄</div>
+                <strong>${i.title}</strong>
+                <div style="font-size:0.8rem; color:var(--dim);">${preview}</div>
+            `;
+
             card.onclick = () => openMarkdown(i.path);
             contentGrid.appendChild(card);
-        });
+        }
+
         closeAllPanels();
     }
 
+    async function getPreview(path) {
+        const md = await fetchMarkdown(path);
+        return md
+            .replace(/[#>*`]/g, '') // 마크다운 제거
+            .slice(0, 80);
+    }
+
     /* 📄 4. 팝업 형태의 뷰어 열기 */
-    function openMarkdown(path) {
+    async function openMarkdown(path) {
         const item = allData.find(d => d.path === path);
         document.getElementById('viewer-title').textContent = item ? item.title : "문서 보기";
 
-        fetch(path)
-            .then(r => { if (!r.ok) throw new Error(); return r.text(); })
-            .then(md => {
-                viewer.style.display = 'block';
-                document.body.style.overflow = 'hidden'; // 뒷배경 스크롤 방지
-                tocBtn.style.display = 'block';
+        try {
+            const md = await fetchMarkdown(path);
 
-                mdContent.innerHTML = renderMarkdown(md, path);
+            viewer.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            tocBtn.style.display = 'block';
 
-                if (window.hljs) {
-                    document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
-                }
+            mdContent.innerHTML = renderMarkdown(md, path);
 
-                generateTOC();
-                closeAllPanels();
-                history.pushState(null, "", `?file=${path}`);
-            })
-            .catch(() => alert("파일을 로드할 수 없습니다. 경로를 확인해주세요."));
+            if (window.hljs) {
+                document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+            }
+
+            generateTOC();
+            closeAllPanels();
+            history.pushState(null, "", `?file=${path}`);
+        } catch {
+            alert("파일을 로드할 수 없습니다.");
+        }
     }
 
     function closeMarkdown() {
@@ -315,37 +430,42 @@
             const group = document.createElement('div');
             group.className = 'cat-group';
             
-            // 카테고리 제목 (클릭 시 메인 그리드에 해당 폴더 파일들 표시 + 사이드바 목록 토글)
+            // 📁 카테고리(폴더) 제목
             const title = document.createElement('div');
             title.className = 'cat-title';
             title.innerHTML = `<span>📁 ${cat}</span> <small>▾</small>`;
+            
+            // 📄 내부 파일 리스트 (사이드바용)
+            const itemList = document.createElement('div');
+            itemList.className = 'cat-items-sidebar';
+            itemList.style.display = 'none'; // 처음엔 닫아둠
+            itemList.style.paddingLeft = '1.2rem';
+            itemList.style.borderLeft = '1px solid var(--border)';
+            itemList.style.marginLeft = '10px';
+
             title.onclick = (e) => {
                 e.stopPropagation();
                 renderCategoryFiles(cat); // 메인 화면 변경
-                const items = title.nextSibling;
-                items.style.display = items.style.display === 'none' ? 'block' : 'none';
+                // 사이드바 목록 토글
+                const isHidden = itemList.style.display === 'none';
+                itemList.style.display = isHidden ? 'block' : 'none';
+                title.querySelector('small').textContent = isHidden ? '▴' : '▾';
             };
-            
-            // 카테고리 내부 파일 목록 (사이드바용)
-            const items = document.createElement('div');
-            items.className = 'cat-items-sidebar';
-            items.style.display = 'none'; // 기본은 닫힘 상태
-            items.style.paddingLeft = '15px';
-            items.style.marginTop = '5px';
 
             grouped[cat].forEach(file => {
                 const item = document.createElement('div');
                 item.className = 'sidebar-item';
                 item.innerHTML = `📄 ${file.title}`;
+                item.style.fontSize = '0.85rem';
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    openMarkdown(file.path); // 파일 즉시 열기
+                    openMarkdown(file.path); // 파일 즉시 팝업 열기
                 };
-                items.appendChild(item);
+                itemList.appendChild(item);
             });
 
             group.appendChild(title);
-            group.appendChild(items);
+            group.appendChild(itemList);
             sidebar.appendChild(group);
         });
     }
