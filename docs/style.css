@@ -4,6 +4,35 @@
     --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+    /* 다크모드에서 마크다운 텍스트 강제 수정 */
+    body.dark .markdown-body {
+        color: var(--text);
+    }
+
+    body.dark .markdown-body h1,
+    body.dark .markdown-body h2,
+    body.dark .markdown-body h3,
+    body.dark .markdown-body h4,
+    body.dark .markdown-body h5,
+    body.dark .markdown-body h6 {
+        color: var(--text);
+    }
+
+    body.dark .markdown-body p,
+    body.dark .markdown-body li,
+    body.dark .markdown-body span {
+        color: var(--text);
+    }
+
+    /* 코드 블록 대비 개선 */
+    body.dark .markdown-body pre {
+        background: #161b22 !important;
+    }
+
+    body.dark .markdown-body code {
+        color: #c9d1d9;
+    }
+
 body.dark { 
     --bg:#0d1117; 
     --card:#161b22; 
@@ -18,6 +47,19 @@ body.light {
     --text:#24292f; 
     --dim:#57606a; 
     --border: #d0d7de; 
+}
+
+body.dark .markdown-body {
+    background: #0d1117;
+}
+
+.preview {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--dim);
+    line-height: 1.4;
+    max-height: 3.2em;
+    overflow: hidden;
 }
 
 body { 

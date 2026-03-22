@@ -109,11 +109,40 @@ function renderFolders(path = "", pushHistory = true) {
     filesInCurrent.forEach(file => {
         const card = document.createElement('div');
         card.className = 'card file-item';
-        card.innerHTML = `<div class="icon">📄</div><strong>${file.title}</strong>`;
+        card.innerHTML = `
+        <div class="icon">📄</div>
+        <strong>${file.title}</strong>
+        <small class="preview">${file.summary || ''}</small>
+        `;
         card.onclick = () => openMarkdown(file.path);
         contentGrid.appendChild(card);
     });
 }
+
+// filesInCurrent.forEach(async file => {
+//     const card = document.createElement('div');
+//     card.className = 'card file-item';
+
+//     let preview = '';
+
+//     try {
+//         let md = mdCache[file.path] || await fetch(`${file.path}?v=${VERSION}`).then(r => r.text());
+//         mdCache[file.path] = md;
+
+//         // 첫 줄 or 첫 문단 추출
+//         preview = md.split('\n').find(line => line.trim() && !line.startsWith('#')) || '';
+//         preview = preview.slice(0, 80);
+//     } catch {}
+
+//     card.innerHTML = `
+//         <div class="icon">📄</div>
+//         <strong>${file.title}</strong>
+//         <small class="preview">${preview}</small>
+//     `;
+
+//     card.onclick = () => openMarkdown(file.path);
+//     contentGrid.appendChild(card);
+// });
 
 // --- 사이드바 트리 구축 ---
 function renderSidebar(data) {

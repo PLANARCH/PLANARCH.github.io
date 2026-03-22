@@ -5,15 +5,57 @@ const baseDir = path.join(__dirname);
 const result = [];
 
 /**
+ * 마크다운에서 요약 추출
+ */
+function extractSummary(content) {
+  const lines = content.split('\n');
+
+  let summary = '';
+  let foundTitle = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (!trimmed) continue;
+
+    // 제목 (#) 만나면 그 다음 줄부터 요약 후보
+    if (trimmed.startsWith('#')) {
+      foundTitle = true;
+      continue;
+    }
+
+    // 제목 이후 첫 문장 사용
+    if (foundTitle) {
+      summary = trimmed;
+      break;
+    }
+
+    // 제목 없는 경우 대비
+    if (!foundTitle && !summary) {
+      summary = trimmed;
+    }
+  }
+
+  // 마크다운 문법 제거
+  summary = summary
+    .replace(/!\[.*?\]\(.*?\)/g, '')   // 이미지 제거
+    .replace(/\[.*?\]\(.*?\)/g, '')    // 링크 제거
+    .replace(/[`*_>#-]/g, '')          // md 기호 제거
+    .replace(/\s+/g, ' ')              // 공백 정리
+    .trim();
+
+  // 길이 제한
+  return summary.slice(0, 120);
+}
+
+/**
  * 특정 디렉토리를 재귀적으로 탐색하여 .md 파일을 찾는 함수
- * @param {string} dir 현재 탐색 중인 절대 경로
- * @param {string} relativePath 결과값에 저장할 상대 경로
  */
 function walk(dir, relativePath = "") {
   const files = fs.readdirSync(dir);
 
   files.forEach((file) => {
-    // 숨김 폴더/파일 제외
+    // 숨김 파일 제외
     if (file.startsWith('.')) return;
 
     const fullPath = path.join(dir, file);
@@ -21,25 +63,31 @@ function walk(dir, relativePath = "") {
     const stat = fs.statSync(fullPath);
 
     if (stat.isDirectory()) {
-      // 폴더일 경우 재귀 호출 (안으로 더 들어감)
       walk(fullPath, currentRelPath);
     } else if (file.endsWith('.md')) {
-      // 파일일 경우 결과 배열에 추가
-      // 슬래시(/) 방향을 URL 형식으로 통일 (윈도우 환경 대비)
       const formattedPath = currentRelPath.replace(/\\/g, '/');
       const pathParts = formattedPath.split('/');
-      
+
+      // 🔥 여기 추가됨 (파일 읽기)
+      let summary = '';
+      try {
+        const content = fs.readFileSync(fullPath, 'utf-8');
+        summary = extractSummary(content);
+      } catch (e) {
+        console.error(`❌ 파일 읽기 실패: ${formattedPath}`);
+      }
+
       result.push({
-        // 가장 상위 폴더를 카테고리로 하거나, 전체 경로를 카테고리로 사용
         category: pathParts.length > 1 ? pathParts[0] : "Root",
         title: file.replace('.md', '').replace(/-/g, ' '),
-        path: formattedPath
+        path: formattedPath,
+        summary   // ⭐ 핵심 추가
       });
     }
   });
 }
 
-// 탐색 시작
+// 실행
 walk(baseDir);
 
 // JSON 저장
