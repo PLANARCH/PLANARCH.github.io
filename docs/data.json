@@ -1,0 +1,26 @@
+[
+  {
+    "category": "Root",
+    "title": "README",
+    "path": "README.md",
+    "summary": "About PLANARCH"
+  },
+  {
+    "category": "기술뉴스",
+    "title": "최신_IT_뉴스_10개_2026 03 22",
+    "path": "기술뉴스/IT/최신_IT_뉴스_10개_2026-03-22.md",
+    "summary": "정부가 '2026 년 AI 컴퓨팅 자원 활용 기반 강화 사업'을 통해 약 2 조 원의 예산을 투입하여 국내 GPU 확보 및 AI 생태계 확충에 나선다고 발표했습니다. 연내 최신 GPU 1 만 5,000 장 이상 확보"
+  },
+  {
+    "category": "기술뉴스",
+    "title": "최신_원전_뉴스_2026 03",
+    "path": "기술뉴스/원전/최신_원전_뉴스_2026-03.md",
+    "summary": "작성일: 20260322"
+  },
+  {
+    "category": "해외뉴스",
+    "title": "latest_overseas_news_2026 03 22",
+    "path": "해외뉴스/latest_overseas_news_2026-03-22.md",
+    "summary": "작성일: 2026 년 03 월 22 일"
+  }
+]
