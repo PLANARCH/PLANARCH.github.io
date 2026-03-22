@@ -1,6 +1,8 @@
 let mdCache = {};
 let allData = [];
 let currentPath = ""; 
+let touchStartX = 0;
+let touchEndX = 0;
 const VERSION = Date.now();
 const THEME_KEY = 'archive-theme';
 
@@ -10,6 +12,8 @@ const breadcrumb = document.getElementById('breadcrumb');
 const viewer = document.getElementById('viewer');
 const mdContent = document.getElementById('md-content');
 const searchInput = document.getElementById('search');
+const SWIPE_THRESHOLD = 70; // 민감도 (px)
+
 
 // --- 초기화 및 테마 ---
 function applyTheme(theme) {
@@ -117,6 +121,42 @@ function renderFolders(path = "", pushHistory = true) {
         card.onclick = () => openMarkdown(file.path);
         contentGrid.appendChild(card);
     });
+}
+
+// 터치 시작
+document.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+
+    // 왼쪽 30px 안에서 시작한 경우만 허용
+    if (touchStartX > 30) touchStartX = null;
+});
+
+// 터치 이동 (선택)
+document.addEventListener('touchmove', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+});
+
+// 터치 끝
+document.addEventListener('touchend', () => {
+    if (touchStartX === null) return;
+
+    const deltaX = touchEndX - touchStartX;
+
+    if (deltaX > SWIPE_THRESHOLD) openSidebar();
+    if (deltaX < -SWIPE_THRESHOLD) closeSidebar();
+    if (deltaX < -SWIPE_THRESHOLD && sidebar.classList.contains('active')) {
+        closeSidebar();
+    }
+});
+
+function openSidebar() {
+    sidebar.classList.add('active');
+    document.querySelector('.overlay').classList.add('active');
+}
+
+function closeSidebar() {
+    sidebar.classList.remove('active');
+    document.querySelector('.overlay').classList.remove('active');
 }
 
 // filesInCurrent.forEach(async file => {
@@ -266,8 +306,11 @@ searchInput.oninput = (e) => {
 // --- 유틸리티 ---
 function toggleSidebar(e) {
     e.stopPropagation();
-    sidebar.classList.toggle('active');
-    document.querySelector('.overlay').classList.toggle('active');
+    if (sidebar.classList.contains('active')) {
+        closeSidebar();
+    } else {
+        openSidebar();
+    }
 }
 
 function closeAllPanels() {
