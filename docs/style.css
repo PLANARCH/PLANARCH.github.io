@@ -3,7 +3,6 @@
     --sidebar-width: 300px;
     --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
     /* 다크모드에서 마크다운 텍스트 강제 수정 */
     body.dark .markdown-body {
         color: var(--text);
@@ -33,6 +32,7 @@
         color: #c9d1d9;
     }
 
+/* 다크 모드 색상 */
 body.dark { 
     --bg:#0d1117; 
     --card:#161b22; 
@@ -41,10 +41,11 @@ body.dark {
     --border: #30363d; 
 }
 
+/* 라이트 모드 색상 보정 */
 body.light { 
     --bg:#ffffff; 
     --card:#f6f8fa; 
-    --text:#24292f; 
+    --text:#24292f; /* 확실한 검정색 계열 설정 */
     --dim:#57606a; 
     --border: #d0d7de; 
 }
@@ -241,21 +242,25 @@ header {
 .breadcrumb:hover { background: rgba(59, 130, 246, 0.2); }
 
 /* --- 마크다운 뷰어 --- */
+/* 뷰어 영역 밖으로 나가는 버그 수정 */
 #viewer { 
     position: fixed; 
-    top: 0; left: 0; width: 100%; height: 100%; 
+    top: 0; left: 0; 
+    width: 100%; /* calc(100vw) 대신 100% 사용 */
+    max-width: 100vw;
+    height: 100%; 
     background: var(--bg); 
-    z-index: 2000; 
+    z-index: 3000; /* 사이드바보다 위로 */
     overflow-y: auto; 
+    box-sizing: border-box; /* 패딩이 너비에 영향을 주지 않도록 */
     visibility: hidden; 
     opacity: 0; 
     transform: translateY(20px); 
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+    transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
 }
 #viewer.active { 
     visibility: visible; 
     opacity: 1; 
-    /* 수정: 원래 위치로 */
     transform: translateY(0); 
 }
 
@@ -269,11 +274,15 @@ header {
 }
 
 .markdown-body {
-    padding: 40px 30px 100px 30px; 
-    max-width: 850px; 
-    margin: 0 auto;
-    line-height: 1.6;
+    color: var(--text) !important;
     background: transparent !important;
+}
+
+/* 최근 업데이트 날짜 스타일 */
+.update-date {
+    font-size: 0.75rem;
+    color: var(--dim);
+    margin-top: 4px;
 }
 
 /* 모바일 대응 (오타 수정됨) */

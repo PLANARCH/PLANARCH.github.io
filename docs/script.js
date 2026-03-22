@@ -2,22 +2,24 @@
  * Archive Project - Integrated Script
  */
 
+/**
+ * Archive Project - Integrated Script (Updated)
+ */
+
 // --- 1. 상수 및 상태 관리 ---
 const VERSION = Date.now();
 const THEME_KEY = 'archive-theme';
-const EDGE_MARGIN = 30;      // 엣지 감지 영역 (px)
-const SWIPE_THRESHOLD = 70;  // 스와이프 인정 거리 (px)
-const MAX_VERTICAL = 100;    // 수직 이동 허용치 (px)
+const EDGE_MARGIN = 30;      
+const SWIPE_THRESHOLD = 70;  
+const MAX_VERTICAL = 100;    
 
 let mdCache = {};
 let allData = [];
 let currentPath = ""; 
 
-// 스와이프 및 포인터 상태
 let swipe = { active: false, startX: 0, startY: 0, currentX: 0 };
 let pointerState = { down: false, startX: 0, startY: 0 };
 
-// DOM 요소
 const sidebar = document.getElementById('sidebar');
 const contentGrid = document.getElementById('content-grid');
 const breadcrumb = document.getElementById('breadcrumb');
@@ -40,7 +42,6 @@ function toggleTheme() {
     localStorage.setItem(THEME_KEY, newTheme);
 }
 
-// 데이터 로드
 fetch(`data.json?v=${VERSION}`)
     .then(r => r.ok ? r.json() : Promise.reject(r.status))
     .then(data => {
@@ -52,7 +53,6 @@ fetch(`data.json?v=${VERSION}`)
         contentGrid.innerHTML = `<div style="text-align:center; padding:50px;"><h3>데이터 로드 실패</h3><p>${err}</p></div>`;
     });
 
-// 라우팅 제어
 async function handleInitialRoute() {
     const params = new URLSearchParams(window.location.search);
     const file = params.get('file');
@@ -73,7 +73,6 @@ async function handleInitialRoute() {
 
 // --- 3. 핵심 렌더링 기능 (그리드 & 트리) ---
 
-// 컨텐츠 그리드 렌더링
 function renderFolders(path = "", pushHistory = true) {
     currentPath = path;
     if (pushHistory) {
@@ -90,40 +89,64 @@ function renderFolders(path = "", pushHistory = true) {
     };
 
     contentGrid.innerHTML = '';
-    const subFolders = new Set();
+    
+    // 폴더별 최신 날짜를 추적하기 위해 Map 사용
+    const subFolders = new Map(); 
     const filesInCurrent = [];
 
     allData.forEach(item => {
         const itemPath = item.path;
+        const itemDate = item.date || ""; // data.json의 date 필드 참조
+
         if (path === "") {
             const parts = itemPath.split('/');
-            if (parts.length > 1) subFolders.add(parts[0]);
-            else filesInCurrent.push(item);
+            if (parts.length > 1) {
+                const fName = parts[0];
+                const existingDate = subFolders.get(fName) || "";
+                // 문자열 비교를 통해 더 최신 날짜 유지
+                if (itemDate > existingDate) subFolders.set(fName, itemDate);
+            } else filesInCurrent.push(item);
         } else if (itemPath.startsWith(path + '/')) {
             const relative = itemPath.substring(path.length + 1);
             const parts = relative.split('/');
-            if (parts.length > 1) subFolders.add(parts[0]);
-            else filesInCurrent.push(item);
+            if (parts.length > 1) {
+                const fName = parts[0];
+                const existingDate = subFolders.get(fName) || "";
+                if (itemDate > existingDate) subFolders.set(fName, itemDate);
+            } else filesInCurrent.push(item);
         }
     });
 
-    subFolders.forEach(folderName => {
+    // 1. 하위 폴더 카드 생성
+    subFolders.forEach((latestDate, folderName) => {
         const fullNextPath = path ? `${path}/${folderName}` : folderName;
         const card = document.createElement('div');
         card.className = 'card folder-item';
-        card.innerHTML = `<div class="icon">📁</div><strong>${folderName}</strong>`;
+        card.innerHTML = `
+            <div class="icon">📁</div>
+            <strong>${folderName}</strong>
+            ${latestDate ? `<div class="update-date" style="font-size:0.75rem; color:var(--dim); margin-top:5px;">📅 ${latestDate}</div>` : ''}
+        `;
         card.onclick = () => renderFolders(fullNextPath);
         contentGrid.appendChild(card);
     });
 
+    // 2. 현재 폴더 내 파일 카드 생성
     filesInCurrent.forEach(file => {
         const card = document.createElement('div');
         card.className = 'card file-item';
-        card.innerHTML = `<div class="icon">📄</div><strong>${file.title}</strong><small class="preview">${file.summary || ''}</small>`;
+        card.innerHTML = `
+            <div class="icon">📄</div>
+            <strong>${file.title}</strong>
+            ${file.date ? `<div class="update-date" style="font-size:0.75rem; color:var(--dim); margin-top:5px;">${file.date}</div>` : ''}
+            <small class="preview">${file.summary || ''}</small>
+        `;
         card.onclick = () => openMarkdown(file.path);
         contentGrid.appendChild(card);
     });
 }
+
+// ... (이후 Sidebar 트리 구축 로직 및 openMarkdown 로직은 기존과 동일)
 
 // 사이드바 트리 구축
 function renderSidebar(data) {
