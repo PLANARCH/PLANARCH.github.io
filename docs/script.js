@@ -7,7 +7,7 @@ const VERSION = Date.now();
 const THEME_KEY = 'archive-theme';
 const EDGE_MARGIN = 30;      // 엣지 감지 영역 (px)
 const SWIPE_THRESHOLD = 70;  // 스와이프 인정 거리 (px)
-const MAX_VERTICAL = 120;    // 수직 이동 허용치 (px)
+const MAX_VERTICAL = 100;    // 수직 이동 허용치 (px)
 
 let mdCache = {};
 let allData = [];
@@ -264,9 +264,11 @@ function copyLink() {
 
 // --- 6. 이벤트 리스너 (스와이프 & 포인터) ---
 
-// 터치 이벤트 (스와이프)
+// 1. 터치 시작
 document.addEventListener('touchstart', (e) => {
     const t = e.changedTouches[0];
+    
+    // 사이드바가 닫힌 상태면 왼쪽 끝 검사, 열린 상태면 어디서든 왼쪽 스와이프 가능
     if (t.clientX <= EDGE_MARGIN || sidebar.classList.contains('active')) {
         swipe.active = true;
         swipe.startX = t.clientX;
@@ -275,9 +277,12 @@ document.addEventListener('touchstart', (e) => {
     }
 }, { passive: true });
 
+// 2. 터치 이동
 document.addEventListener('touchmove', (e) => {
     if (!swipe.active) return;
     const t = e.changedTouches[0];
+
+    // 수직 이동이 너무 크면 일반 스크롤로 간주하고 사이드바 제스처 취소
     if (Math.abs(t.clientY - swipe.startY) > MAX_VERTICAL) {
         swipe.active = false;
         return;
@@ -285,13 +290,39 @@ document.addEventListener('touchmove', (e) => {
     swipe.currentX = t.clientX;
 }, { passive: true });
 
+// 3. 터치 종료
 document.addEventListener('touchend', () => {
     if (!swipe.active) return;
-    const delta = swipe.currentX - swipe.startX;
-    if (!sidebar.classList.contains('active') && swipe.startX <= EDGE_MARGIN && delta > SWIPE_THRESHOLD) openSidebar();
-    if (sidebar.classList.contains('active') && delta < -SWIPE_THRESHOLD) closeSidebar();
+
+    const deltaX = swipe.currentX - swipe.startX;
+
+    // 사이드바 열기 (오른쪽으로 밀기)
+    if (!sidebar.classList.contains('active') && deltaX > SWIPE_THRESHOLD) {
+        openSidebar();
+    }
+    // 사이드바 닫기 (왼쪽으로 밀기)
+    else if (sidebar.classList.contains('active') && deltaX < -SWIPE_THRESHOLD) {
+        closeSidebar();
+    }
+
     swipe.active = false;
 }, { passive: true });
+
+/* --- 사이드바 제어 함수 --- */
+function openSidebar() {
+    sidebar.classList.add('active');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden'; // 사이드바 열릴 때 본문 스크롤 방지
+}
+
+function closeSidebar() {
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// 오버레이 클릭 시 닫기
+overlay.addEventListener('click', closeSidebar);
 
 // 마우스 포인터 (데스크탑 보조)
 document.addEventListener('pointerdown', (e) => {

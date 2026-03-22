@@ -103,6 +103,7 @@ header {
 }
 
 #sidebar { 
+    z-index: 2100;
     width: var(--sidebar-width); 
     left: 0; 
     transform: translateX(-100%); 
@@ -117,7 +118,7 @@ header {
     position: fixed; 
     top: 0; left: 0; right: 0; bottom: 0; 
     background: rgba(0, 0, 0, 0.5); 
-    z-index: 1400; 
+    z-index: 2050; 
     display: none; 
     backdrop-filter: blur(3px); 
 }
@@ -281,4 +282,7 @@ header {
     .cards { grid-template-columns: 1fr 1fr; gap: 1rem; }
     .card { padding: 15px; }
     :root { --sidebar-width: 260px; }
+    body {
+        touch-action: pan-y; /* 수직 스크롤은 브라우저에 맡기고, 수평 제스처는 JS가 가로챔 */
+    }
 }
