@@ -1,9 +1,44 @@
 [
   {
+    "category": "Gadget_Review",
+    "title": "Vision_Pro_2_Deep_Dive_2026 03 26",
+    "path": "Gadget_Review/Vision_Pro_2_Deep_Dive_2026-03-26.md",
+    "summary": "Date: 20260326",
+    "date": "2026-03-26"
+  },
+  {
     "category": "Root",
     "title": "README",
     "path": "README.md",
     "summary": "About PLANARCH",
+    "date": "2026-03-26"
+  },
+  {
+    "category": "Reviews",
+    "title": "MacBook_Air_M3_Review_2026 03 26",
+    "path": "Reviews/MacBook_Air_M3_Review_2026-03-26.md",
+    "summary": "작성일: 20260326 19:45",
+    "date": "2026-03-26"
+  },
+  {
+    "category": "Reviews",
+    "title": "MacBook_Air_M5_Review_2026 03 26",
+    "path": "Reviews/MacBook_Air_M5_Review_2026-03-26.md",
+    "summary": "작성일: 20260326",
+    "date": "2026-03-26"
+  },
+  {
+    "category": "TECH",
+    "title": "AirPods_Max_2_Release_Analysis_2026 03 26",
+    "path": "TECH/AirPods_Max_2_Release_Analysis_2026-03-26.md",
+    "summary": "Date: 20260326",
+    "date": "2026-03-26"
+  },
+  {
+    "category": "TECH",
+    "title": "Deep_Dive_AI_Agents_2026 03 26",
+    "path": "TECH/Deep_Dive_AI_Agents_2026-03-26.md",
+    "summary": "작성일: 20260326 19:27",
     "date": "2026-03-26"
   },
   {
@@ -29,6 +64,13 @@
   },
   {
     "category": "TECH",
+    "title": "M3_MacBook_Air_Review_2026 03 26",
+    "path": "TECH/M3_MacBook_Air_Review_2026-03-26.md",
+    "summary": "Date: 20260326",
+    "date": "2026-03-26"
+  },
+  {
+    "category": "TECH",
     "title": "최신_원전_뉴스_2026 03 22",
     "path": "TECH/Nuclear/최신_원전_뉴스_2026-03-22.md",
     "summary": "작성일: 2026 년 3 월 22 일",
@@ -43,9 +85,23 @@
   },
   {
     "category": "TECH",
+    "title": "Tech_Blog_AirPods_Max_2_Deep_Dive_2026 03 26",
+    "path": "TECH/Tech_Blog_AirPods_Max_2_Deep_Dive_2026-03-26.md",
+    "summary": "작성일: 2026 년 3 월 26 일",
+    "date": "2026-03-26"
+  },
+  {
+    "category": "TECH",
     "title": "Tech_News_2026 03 26",
     "path": "TECH/Tech_News_2026-03-26.md",
-    "summary": "1. OpenAI, 'Sora' 서비스 공식 종료 및 시장 재편",
+    "summary": "애플이 차세대 스페이스 컴퓨터 'Vision Pro 2'의 출시를 공식 발표했습니다. 경량화된 디자인과 향상된 배터리 효율이 주요 특징입니다.",
+    "date": "2026-03-26"
+  },
+  {
+    "category": "TECH",
+    "title": "Tool_Comparison_AI_Agents_2026 03 26",
+    "path": "TECH/Tool_Comparison_AI_Agents_2026-03-26.md",
+    "summary": "Created on 20260326, 19:35 KST",
     "date": "2026-03-26"
   },
   {
