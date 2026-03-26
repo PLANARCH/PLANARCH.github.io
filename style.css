@@ -1,0 +1,190 @@
+/* Modern Tech Blog Theme for PLANARCH */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0f172a;
+    color: #e2e8f0;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+header {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    padding: 2rem 1rem;
+    text-align: center;
+    border-bottom: 2px solid #38bdf8;
+}
+
+h1 {
+    color: #38bdf8;
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+nav {
+    background-color: #1e293b;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+nav a {
+    color: #f8fafc;
+    margin: 0 15px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #38bdf8;
+}
+
+main {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.blog-card {
+    background-color: #1e293b;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    transition: transform 0.3s ease;
+}
+
+.blog-card:hover {
+    transform: translateY(-5px);
+}
+
+.blog-card h2 {
+    color: #38bdf8;
+    margin-top: 0;
+}
+
+.date-badge {
+    display: inline-block;
+    background-color: #38bdf8;
+    color: #0f172a;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.category-tag {
+    background-color: #64748b;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-left: 10px;
+}
+
+footer {
+    text-align: center;
+    padding: 2rem;
+    background-color: #1e293b;
+    color: #94a3b8;
+    margin-top: 3rem;
+}
+
+
+PLAN: The user has granted full authority to improve the `PLANARCH.github.io` project, including modifying interface files (index.html, script.js, style.css). I have just successfully updated the `index.html`. The next logical step is to enhance the visual appeal and usability by updating the CSS file (`style.css`) with a modern design suitable for a tech blog/news site.
+
+ACTION: file_write
+ARG: PLANARCH.github.io/style.css
+CONTENT: /* Modern Tech Blog Theme for PLANARCH */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0f172a;
+    color: #e2e8f0;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+header {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    padding: 2rem 1rem;
+    text-align: center;
+    border-bottom: 2px solid #38bdf8;
+}
+
+h1 {
+    color: #38bdf8;
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+nav {
+    background-color: #1e293b;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+nav a {
+    color: #f8fafc;
+    margin: 0 15px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #38bdf8;
+}
+
+main {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.blog-card {
+    background-color: #1e293b;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    transition: transform 0.3s ease;
+}
+
+.blog-card:hover {
+    transform: translateY(-5px);
+}
+
+.blog-card h2 {
+    color: #38bdf8;
+    margin-top: 0;
+}
+
+.date-badge {
+    display: inline-block;
+    background-color: #38bdf8;
+    color: #0f172a;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.category-tag {
+    background-color: #64748b;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-left: 10px;
+}
+
+footer {
+    text-align: center;
+    padding: 2rem;
+    background-color: #1e293b;
+    color: #94a3b8;
+    margin-top: 3rem;
+}
