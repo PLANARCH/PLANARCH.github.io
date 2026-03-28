@@ -1,9 +1,5 @@
-/**
- * Archive Project - Integrated Script
- */
-
-/**
- * Archive Project - Integrated Script (Updated)
+/
+ * Archive Project - Integrated Script (Fixed)
  */
 
 // --- 1. 상수 및 상태 관리 ---
@@ -42,6 +38,7 @@ function toggleTheme() {
     localStorage.setItem(THEME_KEY, newTheme);
 }
 
+// --- 3. 데이터 로드 및 초기화 ---
 fetch(`data.json?v=${VERSION}`)
     .then(r => r.ok ? r.json() : Promise.reject(r.status))
     .then(data => {
@@ -71,7 +68,7 @@ async function handleInitialRoute() {
     }
 }
 
-// --- 3. 핵심 렌더링 기능 (그리드 & 트리) ---
+// --- 4. 핵심 렌더링 기능 (그리드 & 트리) ---
 
 function renderFolders(path = "", pushHistory = true) {
     currentPath = path;
@@ -96,14 +93,13 @@ function renderFolders(path = "", pushHistory = true) {
 
     allData.forEach(item => {
         const itemPath = item.path;
-        const itemDate = item.date || ""; // data.json의 date 필드 참조
+        const itemDate = item.date || ""; 
 
         if (path === "") {
             const parts = itemPath.split('/');
             if (parts.length > 1) {
                 const fName = parts[0];
                 const existingDate = subFolders.get(fName) || "";
-                // 문자열 비교를 통해 더 최신 날짜 유지
                 if (itemDate > existingDate) subFolders.set(fName, itemDate);
             } else filesInCurrent.push(item);
         } else if (itemPath.startsWith(path + '/')) {
@@ -145,8 +141,6 @@ function renderFolders(path = "", pushHistory = true) {
         contentGrid.appendChild(card);
     });
 }
-
-// ... (이후 Sidebar 트리 구축 로직 및 openMarkdown 로직은 기존과 동일)
 
 // 사이드바 트리 구축
 function renderSidebar(data) {
@@ -196,7 +190,7 @@ function buildTreeUI(obj, parentElement, pathAccumulator = "") {
     });
 }
 
-// --- 4. 마크다운 뷰어 ---
+// --- 5. 마크다운 뷰어 ---
 async function openMarkdown(path, pushHistory = true) {
     const item = allData.find(d => d.path === path);
     document.getElementById('viewer-title').textContent = item ? item.title : path;
@@ -206,12 +200,15 @@ async function openMarkdown(path, pushHistory = true) {
         mdCache[path] = md;
 
         const folder = path.substring(0, path.lastIndexOf('/'));
+        // 상대 경로 이미지/링크 처리 (folder 기반)
         let processedMd = md.replace(/!\[(.*?)\]\((?!http|\/)(.*?)\)/g, (m, alt, src) => {
             const fixedPath = folder ? `${folder}/${src}?v=${VERSION}` : `${src}?v=${VERSION}`;
             return `![${alt}](${fixedPath})`;
         });
 
-        processedMd = processedMd.replace(/^(#{1,6})([^#\s\d])/gm, '$1 $2');
+        // 마크다운 헤더 정규화 (#제목 -> # 제목)
+        processedMd = processedMd.replace(/^(#{1,6})([^#\\s\\d])/gm, '$1 $2');
+        
         mdContent.innerHTML = marked.parse(processedMd);
 
         document.body.classList.add('viewer-open');
@@ -237,7 +234,7 @@ function closeMarkdown() {
     }
 }
 
-// --- 5. 검색 및 유틸리티 ---
+// --- 6. 검색 및 유틸리티 ---
 searchInput.oninput = (e) => {
     const term = e.target.value.toLowerCase();
     if (!term) return renderFolders(currentPath, false);
@@ -259,11 +256,13 @@ searchInput.oninput = (e) => {
 function openSidebar() {
     sidebar.classList.add('active');
     overlay.classList.add('active');
+    document.body.style.overflow = 'hidden'; 
 }
 
 function closeSidebar() {
     sidebar.classList.remove('active');
     overlay.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 function toggleSidebar(e) {
@@ -285,13 +284,12 @@ function copyLink() {
     });
 }
 
-// --- 6. 이벤트 리스너 (스와이프 & 포인터) ---
+// --- 7. 이벤트 리스너 (스와이프 & 포인터) ---
 
-// 1. 터치 시작
+// 터치 시작
 document.addEventListener('touchstart', (e) => {
     const t = e.changedTouches[0];
     
-    // 사이드바가 닫힌 상태면 왼쪽 끝 검사, 열린 상태면 어디서든 왼쪽 스와이프 가능
     if (t.clientX <= EDGE_MARGIN || sidebar.classList.contains('active')) {
         swipe.active = true;
         swipe.startX = t.clientX;
@@ -300,12 +298,11 @@ document.addEventListener('touchstart', (e) => {
     }
 }, { passive: true });
 
-// 2. 터치 이동
+// 터치 이동
 document.addEventListener('touchmove', (e) => {
     if (!swipe.active) return;
     const t = e.changedTouches[0];
 
-    // 수직 이동이 너무 크면 일반 스크롤로 간주하고 사이드바 제스처 취소
     if (Math.abs(t.clientY - swipe.startY) > MAX_VERTICAL) {
         swipe.active = false;
         return;
@@ -313,17 +310,15 @@ document.addEventListener('touchmove', (e) => {
     swipe.currentX = t.clientX;
 }, { passive: true });
 
-// 3. 터치 종료
+// 터치 종료
 document.addEventListener('touchend', () => {
     if (!swipe.active) return;
 
     const deltaX = swipe.currentX - swipe.startX;
 
-    // 사이드바 열기 (오른쪽으로 밀기)
     if (!sidebar.classList.contains('active') && deltaX > SWIPE_THRESHOLD) {
         openSidebar();
     }
-    // 사이드바 닫기 (왼쪽으로 밀기)
     else if (sidebar.classList.contains('active') && deltaX < -SWIPE_THRESHOLD) {
         closeSidebar();
     }
@@ -331,23 +326,10 @@ document.addEventListener('touchend', () => {
     swipe.active = false;
 }, { passive: true });
 
-/* --- 사이드바 제어 함수 --- */
-function openSidebar() {
-    sidebar.classList.add('active');
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden'; // 사이드바 열릴 때 본문 스크롤 방지
-}
-
-function closeSidebar() {
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
-}
-
 // 오버레이 클릭 시 닫기
 overlay.addEventListener('click', closeSidebar);
 
-// 마우스 포인터 (데스크탑 보조)
+// 마우스 포인터 보조
 document.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     if (e.clientX <= EDGE_MARGIN || sidebar.classList.contains('active')) {
@@ -370,8 +352,7 @@ document.addEventListener('pointerup', (e) => {
     pointerState.down = false;
 });
 
-// 기타 전역 리스너
-overlay.addEventListener('click', closeSidebar);
+// URL 파라미터 처리 (history)
 window.onpopstate = (e) => {
     if (e.state?.view === 'file') openMarkdown(e.state.path, false);
     else if (e.state?.view === 'folder') renderFolders(e.state.cat, false);

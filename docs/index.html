@@ -4,43 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>자료 아카이브</title>
+    <!-- Marked.js 라이브러리 로드 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
 </head>
-<body>
-    <div class="container">
+<body class="dark">
+    <div id="overlay" class="overlay"></div>
+    
+    <!-- 사이드바 -->
+    <aside id="sidebar" class="sidebar">
         <header>
-            <h1>📚 자료 아카이브</h1>
-            <button id="theme-toggle" aria-label="테마 전환">🌓</button>
+            <h3>Archive Tree</h3>
+            <button id="close-sidebar-btn" class="icon-btn">✕</button>
         </header>
+        <nav id="tree-container"></nav>
+    </aside>
 
-        <nav id="sidebar">
-            <ul id="category-list"></ul>
-        </nav>
+    <!-- 메인 콘텐츠 -->
+    <main id="main-content">
+        <div id="content-grid" class="grid-view"></div>
+        
+        <!-- 마크다운 뷰어 (오버레이) -->
+        <div id="viewer-overlay" class="viewer-overlay hidden">
+            <button id="close-viewer-btn" class="icon-btn viewer-close">✕</button>
+            <h2 id="viewer-title"></h2>
+            <div id="md-content" class="markdown-body"></div>
+        </div>
 
-        <main id="content-area">
-            <div class="search-bar">
-                <input type="text" id="search-input" placeholder="검색어를 입력하세요...">
-            </div>
-            <div id="archive-content">
-                <!-- Archive items will be inserted here -->
-            </div>
-        </main>
+        <!-- 검색 바 -->
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="검색...">
+        </div>
+    </main>
 
-        <button id="copy-link-btn" class="hidden">🔗 링크 복사</button>
-    </div>
-
-    <script src="data.json"></script>
+    <!-- 스크립트 로드 -->
     <script src="script.js"></script>
-    <script>
-        // Initialize the app once data is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof allData !== 'undefined' && allData.length > 0) {
-                initArchive(allData);
-            } else {
-                console.error('데이터가 로드되지 않았습니다.');
-            }
-        });
-    </script>
 </body>
 </html>
