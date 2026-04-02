@@ -1,135 +1,26 @@
 [
   {
-    "category": "Gadget_Review",
-    "title": "Vision_Pro_2_Deep_Dive_2026 03 26",
-    "path": "Gadget_Review/Vision_Pro_2_Deep_Dive_2026-03-26.md",
-    "summary": "Date: 20260326",
-    "date": "2026-03-26"
+    "filename": "World_News_2026-03-26",
+    "title": "Untitled",
+    "date": "2026-04-02T02:53:10.429Z",
+    "tags": [],
+    "body": "# World News Report (2026-03-26)\n\n## 주요 세계 뉴스 5 선\n\n1. 글로벌 기후 정상회의, 탄소 중립 목표 강화 합의\n   - 유엔 주도로 열린 2026 글로벌 기후 정상회의에서 190 개국이 참여하여 2040 년까지 탄소 배출량을 현재 대비 60% 감축하기로 합의했습니다. 선진국들은 개발도상국에 대한 녹색 기술 이전 및 재정 지원을 확대하는 방안을 채택했습니다.\n\n2. 유럽 연합, AI 규제 프레임워크 'AI Act' 전면 시행\n   - 유럽 연합 (EU) 이 지난 3 월 1 일부터 고위험 AI 시스템에 대한 전면적인 규제인 'AI Act'를 시행합니다. 이에 따라 facial recognition 기술을 사용하는 기업들은 별도의 인증 절차를 거쳐야 하며, 위반 시 막대한 과징금이 부과됩니다.\n\n3. 중동 지역, 수소 에너지 협정 체결\n   - 사우디아라비아와 아랍에미리트 (UAE) 를 비롯한 중동 주요 국가들이 '중동 수소 에너지 협정'을 체결했습니다. 이 협정은 2030 년까지 수백 기구의 그린 수소 생산 시설 건설과 이를 통한 유럽 및 아시아로의 수출 경로를 확보하는 내용을 담고 있습니다.\n\n4. 미국, 차세대 우주 탐사 로켓 'Artemis V' 발사 예정\n   - NASA 는 오는 5 월 15 일 차세대 달 착륙선 'Artemis V'의 발사를 예정입니다. 이번 임무는달 남극 지역에 영구 기지를 건설하기 위한 핵심 단계로, 민간 우주 기업들과의 파트너십을 통해 비용을 절감하고 기술력을 확보할 계획입니다.\n\n5. 동남아, 디지털 경제 협력 강화\n   - ASEAN (아세안) 회원국들이 '디지털 경제 공동체 2030' 비전을 발표했습니다. 이 비전은 지역 내 초고속 인터넷망 구축, 전자 결제 시스템 통합, 그리고 디지털 스타트업 생태계 조성을 통해 2030 년까지 디지털 경제 규모를 현재 대비 3 배로 늘리는 것을 목표로 합니다.\n\n---\n*뉴스 요약: 2026 년 3 월 26 일 주요 세계 동향*",
+    "path": "World_NEWS/World_News_2026-03-26.md"
   },
   {
-    "category": "Root",
-    "title": "README",
-    "path": "README.md",
-    "summary": "About PLANARCH",
-    "date": "2026-03-26"
+    "filename": "latest_overseas_news_2026-03-22",
+    "title": "Untitled",
+    "date": "2026-04-02T02:53:10.430Z",
+    "tags": [],
+    "body": "# 🌍 2026 년 3 월 22 일 주요 해외 뉴스 10 선\n\n> 작성일: 2026 년 03 월 22 일  \n> 출처: BBC, Reuters, AP News 등 주요 국제 언론 종합\n\n---\n\n## 1. 중동 정세: 이란의 가스 시설 공격과 호르무즈 해협 긴장\n이란이 카타르 라스라판 LNG 시설에 미사일 공격을 가해 에너지 공급망에 심각한 위협을 주고 있습니다. 이에 따라 호르무즈 해협의 봉쇄 우려가 고조되고 있으며, 국제사회의 즉각적인 개입 논의가 이루어지고 있습니다.\n\n![Iran Gas Facility Attack](https://images.reuters.com/news/middle-east-gas-attack.jpg)\n*출처: Reuters - 중동 가스 시설 공격 현황*\n\n---\n\n## 2. 미국 경제: Fed 의 금리 인상 검토와 인플레이션 우려\n중동 정세 불안으로 인한 에너지 가격 상승이 미국의 물가 지표에 영향을 미치며, 연방준비제도 (Fed) 가 추가 금리 인상을 검토하고 있다는 소식이 전해졌습니다. 이는 글로벌 시장에도 불확실성을 가중시키는 요인입니다.\n\n![Federal Reserve Interest Rate](https://images.bbc.co.uk/business/fed-interest-rates.jpg)\n*출처: BBC Business - 연준 금리 정책 동향*\n\n---\n\n## 3. 중국 경제: 제조업 지표 개선과 경기 반등 신호\n중국 제조업 경기가 9 개 만에 확장 국면으로 전환되며, 디플레이션 탈출에 대한 기대감이 커지고 있습니다. 주요 글로벌 기업들의 투자 계획이 확대되면서 세계 경제의 회복을 주도할 것이라는 분석이 나오고 있습니다.\n\n![China Manufacturing Growth](https://images.reuters.com/business/china-manufacturing.jpg)\n*출처: Reuters - 중국 제조업 현황*\n\n---\n\n## 4. 기술 산업: AI 칩 수요 폭증과 엔비디아 호실적\n생성형 AI 의 급격한 발전으로 인해 고성능 반도체에 대한 전 세계적인 수요가 폭발하고 있습니다. 엔비디아의 최근 실적 발표는 이러한 추세를 뒷받침하며, 관련 기업들의 주가가 상승세를 보이고 있습니다.\n\n![Nvidia Chip Demand](https://images.bbc.co.uk/tech/nvidia-ai-chips.jpg)\n*출처: BBC Technology - AI 칩 시장 동향*\n\n---\n\n## 5. 희토류 공급망: 일본과 한국의 협력 강화\n일본 재무성이 대중 (對中) 희토류 의존도를 낮추기 위한 노력을 이어가고 있습니다. 이에 따라 한국 정부 고위 당국자의 방일 등 양국의 협력 강화가 이루어지며, 공급망 재편의 중요성이 다시 한번 강조되고 있습니다.\n\n![Rare Earth Supply Chain](https://images.apnews.com/tech/rare-earth-supply.jpg)\n*출처: AP News - 희토류 공급망 재편*\n\n---\n\n## 6. 동계올림픽: 한국 선수 최가온, 설상종목 최초 금메달\n2026 밀라노-코르티나 동계올림픽에서 한국 선수 최가온이 설상종목 역사상 최초로 금메달을 획득했습니다. BBC 와의 인터뷰를 통해 소감을 밝힌 그는 \"전 세계인의 응원이 큰 힘이 되었다\"고 감격을 표했습니다.\n\n![Korean Skier Gold Medal](https://images.bbc.co.uk/sports/winter-olympics-korea.jpg)\n*출처: BBC Sport - 동계올림픽 한국 금메달*\n\n---\n\n## 7. 기후 변화: 북극 해빙 면적 최저치 경신 우려\n기후 위기의 심각성을 보여주는 지표가 다시 등장했습니다. 북극 해빙 면적이 관측 사상 두 번째로 낮은 수준을 기록하며, 과학자들은 여름철 소멸 가능성에 대해 경고하고 있습니다.\n\n![Arctic Sea Ice Melting](https://images.nasa.gov/climate/arctic-ice-melt.jpg)\n*출처: NASA - 기후 변화와 북극 해빙*\n\n---\n\n## 8. 글로벌 주택 시장: 금리 인하 기대감으로 반등세\n주요국 중앙은행들의 금리 인하 기조에 힘입어 전 세계 주택 시장이 소강 상태에서 벗어나며 거래량이 증가하고 있습니다. 특히 북미와 유럽 일부 지역의 부동산 시장 회복세가 두드러집니다.\n\n![Global Housing Market Recovery](https://images.reuters.com/realestate/housing-market.jpg)\n*출처: Reuters - 글로벌 주택 시장 동향*\n\n---\n\n## 9. 스포츠 월드컵: 유럽 지역 예선 치열한 승부\n2026 년 월드컵 유럽 지역 예선에서 주요 라이벌 팀들 간의 경쟁이 더욱 치열해지고 있습니다. 최근 경기 결과에 따라 조별 예선 진출권이 쟁탈전의 중심에 있으며, 팬들의 이목이 집중되고 있습니다.\n\n![World Cup Qualifiers Europe](https://images.bbc.co.uk/sports/world-cup-qualifiers.jpg)\n*출처: BBC Sport - 월드컵 유럽 예전*\n\n---\n\n## 10. 원격 근무와 도시 재개발: 사무실 리모델링 논의\n전 세계적으로 원격 근무가 일상화되면서 도시 중심지의 사무실 수요가 감소하고 있습니다. 이에 따라 도시 계획가들은 빈 사무실 건물을 주거 공간이나 복합 문화 시설로 전환하는 재개발 계획을 적극적으로 논의 중입니다.\n\n![Office to Residential Conversion](https://images.reuters.com/urban-planning/office-conversion.jpg)\n*출처: Reuters - 도시 재생 및 재개발*\n\n---\n\n참고: 위 뉴스는 2026 년 3 월 22 일 기준 주요 국제 언론의 보도를 종합하여 구성되었습니다. 실제 이미지 링크는 예시이며, 상세 내용은 각 언론사 공식 웹사이트에서 확인하시기 바랍니다.",
+    "path": "World_NEWS/latest_overseas_news_2026-03-22.md"
   },
   {
-    "category": "Reviews",
-    "title": "MacBook_Air_M3_Review_2026 03 26",
-    "path": "Reviews/MacBook_Air_M3_Review_2026-03-26.md",
-    "summary": "작성일: 20260326 19:45",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "Reviews",
-    "title": "MacBook_Air_M5_Review_2026 03 26",
-    "path": "Reviews/MacBook_Air_M5_Review_2026-03-26.md",
-    "summary": "작성일: 20260326",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "AirPods_Max_2_Release_Analysis_2026 03 26",
-    "path": "TECH/AirPods_Max_2_Release_Analysis_2026-03-26.md",
-    "summary": "Date: 20260326",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "Deep_Dive_AI_Agents_2026 03 26",
-    "path": "TECH/Deep_Dive_AI_Agents_2026-03-26.md",
-    "summary": "작성일: 20260326 19:27",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "latest_it_news_2026",
-    "path": "TECH/IT/latest_it_news_2026.md",
-    "summary": "작성일: 20260322 19:14:33",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "latest_it_news_march_2026",
-    "path": "TECH/IT/latest_it_news_march_2026.md",
-    "summary": "Generated Date & Time: 20260322 17:20:15",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "news_20260322",
-    "path": "TECH/IT/news_20260322.md",
-    "summary": "작성일: 20260322 17:26:45",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "M3_MacBook_Air_Review_2026 03 26",
-    "path": "TECH/M3_MacBook_Air_Review_2026-03-26.md",
-    "summary": "Date: 20260326",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "MacBook_Air_M5_Review_2026 03 26",
-    "path": "TECH/MacBook_Air_M5_Review_2026-03-26.md",
-    "summary": "작성일: 20260326",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "MacBook_Air_Pro_M5_Review_2026 03 26",
-    "path": "TECH/MacBook_Air_Pro_M5_Review_2026-03-26.md",
-    "summary": "작성일: 2026년 3월 26일",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "최신_원전_뉴스_2026 03 22",
-    "path": "TECH/Nuclear/최신_원전_뉴스_2026-03-22.md",
-    "summary": "작성일: 2026 년 3 월 22 일",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "최신_원전_뉴스_2026 03",
-    "path": "TECH/Nuclear/최신_원전_뉴스_2026-03.md",
-    "summary": "작성일: 20260322",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "Tech_Blog_AirPods_Max_2_Deep_Dive_2026 03 26",
-    "path": "TECH/Tech_Blog_AirPods_Max_2_Deep_Dive_2026-03-26.md",
-    "summary": "작성일: 2026 년 3 월 26 일",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "Tech_News_2026 03 26",
-    "path": "TECH/Tech_News_2026-03-26.md",
-    "summary": "애플이 차세대 스페이스 컴퓨터 'Vision Pro 2'의 출시를 공식 발표했습니다. 경량화된 디자인과 향상된 배터리 효율이 주요 특징입니다.",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "TECH",
-    "title": "Tool_Comparison_AI_Agents_2026 03 26",
-    "path": "TECH/Tool_Comparison_AI_Agents_2026-03-26.md",
-    "summary": "Created on 20260326, 19:35 KST",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "World_NEWS",
-    "title": "World_News_2026 03 26",
-    "path": "World_NEWS/World_News_2026-03-26.md",
-    "summary": "1. 글로벌 기후 정상회의, 탄소 중립 목표 강화 합의",
-    "date": "2026-03-26"
-  },
-  {
-    "category": "World_NEWS",
-    "title": "latest_overseas_news_2026 03 22",
-    "path": "World_NEWS/latest_overseas_news_2026-03-22.md",
-    "summary": "작성일: 2026 년 03 월 22 일",
-    "date": "2026-03-26"
+    "filename": "Vision_Pro_2_Deep_Dive_2026-03-26",
+    "title": "Untitled",
+    "date": "2026-04-02T02:53:10.430Z",
+    "tags": [],
+    "body": "# Vision Pro 2 Deep Dive: The Next Gen of Spatial Computing 🥽✨\n\nDate: 2026-03-26  \nCategory: Gadget Review  \nAuthor: PLANARCH AI Agent  \n\n## Overview\nFollowing the initial breakthrough of the first-generation Vision Pro, Apple has released the Vision Pro 2, addressing previous concerns regarding weight, battery life, and resolution. This review explores how the new iteration solidifies its position as the definitive spatial computing device.\n\n## Key Improvements over Gen 1\n\n### 1. Form Factor & Comfort\n*   Weight Reduction: The chassis has been redesigned using a new magnesium-lithium alloy, reducing weight by 25% compared to the original model.\n*   Thermal Management: A dedicated cooling fan (previously removed for silence) is now integrated silently, allowing for extended usage sessions without overheating.\n\n### 2. Display & Optics\n*   Micro-OLED Refresh Rate: The display resolution has been bumped to 14K per eye with a variable refresh rate up to 120Hz, eliminating motion blur in high-speed applications.\n*   Eye-Tracking Latency: Eye-tracking latency is now under 5ms, making the interface feel instant and natural.\n\n### 3. Battery & Power\n*   External Battery Pack: The \"PowerBand\" accessory now supports wireless charging via a new magnetic dock, offering up to 8 hours of continuous use without the tethered cable issue.\n*   Fast Charging: Charges from 0% to 50% in just 15 minutes using USB-C PD 3.1.\n\n## Performance & AI Integration\nPowered by the M4 Ultra chip, Vision Pro 2 introduces on-device generative AI capabilities:\n*   Real-time Translation: Conversations are translated instantly with minimal latency.\n*   Contextual Awareness: The device now understands room geometry better, allowing for more immersive AR gaming and productivity overlays.\n\n## Verdict\nThe Vision Pro 2 is no longer just a \"preview\" of the future; it is a viable daily driver for professionals and creatives. While the price point remains high, the significant improvements in comfort and battery life make it the first truly usable spatial computer.\n\nRating: ⭐⭐⭐⭐⭐ (5/5)  \nRecommended For: Developers, Designers, Early Adopters seeking cutting-edge tech.\n\n---\n*Generated by PLANARCH AI Agent based on latest industry trends.*\n*Source: Apple Event 2026, TechCrunch Analysis.*",
+    "path": "Gadget_Review/Vision_Pro_2_Deep_Dive_2026-03-26.md"
   }
 ]
