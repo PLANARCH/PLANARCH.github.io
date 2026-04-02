@@ -1,4 +1,4 @@
-/
+/*
  * Archive Project - Integrated Script (Fixed)
  */
 
